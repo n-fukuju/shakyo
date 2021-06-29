@@ -16,7 +16,7 @@ jobs:
     # Node.js環境
     - name: setup node
       uses: actions/setup-node@v1
-      width:
+      with:
         node-version: '12.x'
     
     # npm install
