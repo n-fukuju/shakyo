@@ -22,7 +22,7 @@ jobs:
     # npm install
     - name: Cache dependencies
       uses: actions/cache@v1
-      width:
+      with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
