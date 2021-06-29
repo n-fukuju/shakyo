@@ -1,0 +1,47 @@
+name: github pages
+
+# masterブランチへプッシュ
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build-deploy:
+    # リポジトリのチェックアウト
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    # Node.js環境
+    - name: setup node
+      uses: actions/setup-node@v1
+      width:
+        node-version: '12.x'
+    
+    # npm install
+    - name: Cache dependencies
+      uses: actions/cache@v1
+      width:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    # package.json の依存パッケージ
+    - name: install
+      run: npm install --frozen-lockfile
+    
+    # Next.js のビルド
+    - name: build
+      run: npm run build
+    - name: export
+      run: npm run export
+    - name: add nojekyll
+      run: touch ./out/.nojekyll
+    
+    # ブランチ作成
+    - name: deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./out
