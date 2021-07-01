@@ -62,7 +62,7 @@ interface MenuItem{
 const menuItems:MenuItem[] = [
   {text: "top", link: "/"},
   {text: "chapter1", link: ""},
-  {text: "page1", link: "page1"},
+  {text: "page1", link: "/page1"},
 ];
 
 // export default function Menu() {
