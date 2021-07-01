@@ -2,6 +2,9 @@ import Script from 'next/script';
 import { useRouter } from 'next/router';
 import LayoutComponent from '../components/LayoutComponent';
 
+/** TypeScript エラー回避用 */
+declare var ace:any;
+
 export default function Page1(){
     const router = useRouter();
     return (
@@ -11,15 +14,12 @@ export default function Page1(){
             <div id="editor" style={{position:"absolute" ,top:0,right:0,bottom:0,left:0}}></div>
         </div>
         <Script src={router.basePath + "/scripts/ace/ace.js"} onLoad={()=>{
-            var ace:any;
-            if(ace){
-                var editor = ace.edit("editor");
-                editor.setTheme("ace/theme/github");
-                editor.session.setMode("ace/mode/php");
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/github");
+            editor.session.setMode("ace/mode/php");
 
-                editor.setShowPrintMargin(false);
-                editor.setValue("<?php\nphpinfo();\n");
-            }
+            editor.setShowPrintMargin(false);
+            editor.setValue("<?php\nphpinfo();\n");
         }}/>
     </>}/>
     )
