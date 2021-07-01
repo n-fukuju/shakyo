@@ -9,14 +9,15 @@ export default function Page1(){
             <div id="editor" style={{position:"absolute" ,top:0,right:0,bottom:0,left:0}}></div>
         </div>
         <Script src="/scripts/ace/ace.js" onLoad={()=>{
-            console.log("ace: ", ace);
-            var editor = ace.edit("editor");
-            console.log("editor: ", editor);
-            editor.setTheme("ace/theme/github");
-            editor.session.setMode("ace/mode/php");
+            var ace:any;
+            if(ace){
+                var editor = ace.edit("editor");
+                editor.setTheme("ace/theme/github");
+                editor.session.setMode("ace/mode/php");
 
-            editor.setShowPrintMargin(false);
-            editor.setValue("<?php\nphpinfo();\n");
+                editor.setShowPrintMargin(false);
+                editor.setValue("<?php\nphpinfo();\n");
+            }
         }}/>
     </>}/>
     )
