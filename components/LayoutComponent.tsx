@@ -1,6 +1,7 @@
 
 // [Permanent drawer](https://material-ui.com/components/drawers/#permanent-drawer)
 import React from 'react';
+import { useRouter } from 'next/router';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -71,6 +72,7 @@ const menuItems:MenuItem[] = [
  */
 const LayoutComponent: React.FC<Props> = (props)=>{
   const classes = useStyles();
+  const router = useRouter();
 
   return (
     <div className={classes.root}>
@@ -94,16 +96,26 @@ const LayoutComponent: React.FC<Props> = (props)=>{
         <div className={classes.toolbar} />
         <Divider />
         <List>
-          {menuItems.map((item)=>(
-            <ListItem button component={(item.link!=="")?"a":"div"} href={item.link} key={item.link} selected={props.page === item.text}>
-              <ListItemText primary={item.text} />
-            </ListItem>
+          {menuItems.map((item)=>{
+            if(item.link==""){
+              return(
+                <ListItem key={item.link} selected={props.page === item.text}>
+                  <ListItemText primary={item.text} />
+                </ListItem>
+              )
+            }else{
+              return (
+                <ListItem key={item.link} selected={props.page === item.text} button component="a" href={router.basePath + item.link}>
+                  <ListItemText primary={item.text} />
+                </ListItem>
+              )
+            }
             // <ListItem button key={item.text} selected={props.page===item.text}>
             //   <Link href={item.link} variant="inherit">
             //     <ListItemText primary={item.text} />
             //   </Link>
             // </ListItem>
-          ))}
+          })}
         </List>
         {/* <Divider />
         <List>
