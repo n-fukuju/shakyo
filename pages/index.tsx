@@ -6,7 +6,7 @@ import LayoutComponent from '../components/LayoutComponent';
 
 export default function Home() {
   return (
-    <LayoutComponent title="page title" page="index" content={<>
+    <LayoutComponent title="page title" page="top" content={<>
       <p>page content</p>
     </>}/>
 
