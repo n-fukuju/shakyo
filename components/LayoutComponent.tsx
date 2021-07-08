@@ -16,6 +16,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
+import NavigateNext from '@material-ui/icons/NavigateNext';
 
 
 const drawerWidth = 240;
@@ -64,6 +65,7 @@ const menuItems:MenuItem[] = [
   {text: "top", link: "/"},
   {text: "chapter1", link: ""},
   {text: "page1", link: "/page1"},
+  {text: "page2", link: "/page2"}
 ];
 
 // export default function Menu() {
@@ -107,6 +109,7 @@ const LayoutComponent: React.FC<Props> = (props)=>{
               return (
                 <ListItem key={item.link} selected={props.page === item.text} button component="a" href={router.basePath + item.link}>
                   <ListItemText primary={item.text} />
+                  <ListItemIcon><NavigateNext/></ListItemIcon>
                 </ListItem>
               )
             }
