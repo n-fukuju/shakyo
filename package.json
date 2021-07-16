@@ -12,10 +12,12 @@
     "@material-ui/core": "^4.11.4",
     "@material-ui/icons": "^4.11.2",
     "next": "11.0.1",
+    "plantuml-encoder": "^1.4.0",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
   "devDependencies": {
+    "@types/plantuml-encoder": "^1.4.0",
     "@types/react": "17.0.11",
     "typescript": "4.3.4"
   }
