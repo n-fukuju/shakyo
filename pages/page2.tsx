@@ -32,7 +32,7 @@ export default function Page1(){
             editor.setValue("<?php\necho 'xyz';\n");
         }}/>
         
-        <Script src={router.basePath + "/scripts/pib/php-web.js"} onLoad={async()=>{
+        <Script src={router.basePath + "/php-web.js"} onLoad={async()=>{
             console.log('php-web.js loaded.');
             php = await PHP({postRun:()=>{
                 console.log('php.postRun.');
@@ -44,8 +44,12 @@ export default function Page1(){
                     var code = editor.getValue();
                     code = code.replace(/^\s*<\?php/, "") // remove <?php
                     code = code + "\necho PHP_EOL;" // flush line buffer
-                    let ret = php.ccall('pib_run', 'number', ['string'], [code]);
-                    if(ret != 0){ console.log('error from php.ccall'); }
+                    try{
+                        let ret = php.ccall('pib_run', 'number', ['string'], [code]);
+                        if(ret != 0){ console.log('error from php.ccall'); }
+                    }catch(ex){
+                        console.log('error: ', ex);
+                    }
                 });
             }}).then((p:any)=>{
                 console.log('pib_init');
