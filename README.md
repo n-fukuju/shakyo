@@ -6,7 +6,7 @@ https://n-fukuju.github.io/shakyo/
 ## PHP構成
 - [PIB: PHP in Browser](https://github.com/oraoto/pib)
 
-![php](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/php.phg)
+![php](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/php.png)
 
 
 ## PlantUML構成
