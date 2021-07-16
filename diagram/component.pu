@@ -1,0 +1,31 @@
+@startuml php
+node "Web Browser" {
+  node "Next.js" {
+    [HTML]
+    [JavaScript]
+  }
+  node "WebAssembly" {
+    [pib]
+    [PHP]
+  }
+}
+[JavaScript] --> [pib] : 呼び出し
+[pib] --> [PHP]
+[PHP(src)] ..> emscripten : コンパイル
+emscripten ..> [PHP]
+@enduml
+
+@startuml plantuml
+node "GitHub Pages"{
+    node "Next.js" {
+        [JavaScript]
+        [<img>]
+    }
+}
+node "www.plantuml.com" {
+    [plantuml/img]
+}
+
+[JavaScript] --> [<img>] : src URL構築
+[<img>] --> [plantuml/img] : 画像リクエスト
+@enduml
