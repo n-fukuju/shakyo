@@ -67,6 +67,7 @@ const menuItems:MenuItem[] = [
   // {text: "page1", link: "/page1"},
   // {text: "page2", link: "/page2"},
   {text: "php", link: "/php"},
+  {text: "plantuml", link: "/plantuml"},
 ];
 
 // export default function Menu() {
