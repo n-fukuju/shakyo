@@ -5,6 +5,7 @@ import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import Collapse from '@material-ui/core/Collapse';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -21,6 +22,8 @@ import HelpOutline from '@material-ui/icons/HelpOutline';
 import Popover from '@material-ui/core/Popover';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import ExpandLess from '@material-ui/icons/ExpandLess';
 
 import plantUmlEncoder from 'plantuml-encoder'
 
@@ -50,17 +53,18 @@ interface Text {
     /** 例題コレクション */
     questions: string[];
 }
+// String.raw() を使用することで、改行文字（\n）をそのまま出力する。
 const texts: TextHead[] = [
     {
         label: "シーケンス図", id: "1", children: [
             {
                 id: "1", label: "基本的な例",
-                content: `
+                content: String.raw`
                 シーケンス '->' を、2つの分類子間のメッセージを描画するために使います。分類子を、明示的に宣言する必要はありません。
                 点線の矢印を使う場合は、'-->' とします。
                 また、 '<-' や、 '<--' を使うこともできます。これらによって図の見た目が変わることはありませんが、可読性を高めることができます。
                 ただし、以上の方法はシーケンス図だけに当てはまります。ほかの種類の図には当てはまりません。`,
-                sample: `
+                sample: String.raw`
                 @startuml
                 Alice -> Bob: Authentication Request
                 Bob --> Alice: Authentication Response
@@ -72,11 +76,11 @@ const texts: TextHead[] = [
             },
             {
                 id: "2", label: "分類子の宣言",
-                content: `
+                content: String.raw`
                 キーワードparticipantを使って分類詞を宣言すると、分類子の表示を調整することができます。
                 宣言した順序が、デフォルトの表示順になります。
                 分類子の宣言に別のキーワードを使用すると、分類子の形を変えることができます。`,
-                sample: `
+                sample: String.raw`
                 @startuml
                 participant participant as Foo
                 actor       actor       as Foo1
@@ -98,54 +102,97 @@ const texts: TextHead[] = [
             },
             {
                 id: "3", label: "別名",
-                content: `
+                content: String.raw`
                 キーワード as を使って、分類子の名前を変更することができます。
                 アクターや分類子の背景色を、HTML コードや色名を使って変更することもできます。`,
-                sample: `
+                sample: String.raw`
                 @startuml
                 actor Bob #red
                 ' The only difference between actor
                 'and participant is the drawing
                 participant Alice
-                participant "I have a really long name" as L #99FF99
+                participant "I have a really\nlong name" as L #99FF99
                 /' You can also declare:
-                   participant L as "I have a really long name"  #99FF99
-                  '/
-                
+                participant L as "I have a really\nlong name"  #99FF99
+                '/
+
                 Alice->Bob: Authentication Request
                 Bob->Alice: Authentication Response
                 Bob->L: Log transaction
                 @enduml`, 
                 questions: [] 
             },
-            {id:"4", label: "分類子のorder (x)", content: ``, sample: ``, questions: []},
-            {id:"5", label: "別名2 (x)", content: ``, sample: ``, questions: []},
-            {id:"6", label: "自分自身へのメッセージ (x)", content: ``, sample: ``, questions: []},
-            {id:"7", label: "Text alignment (x)", content: ``, sample: ``, questions: []},
-            {id:"8", label: "矢印の見た目 (x)", content: ``, sample: ``, questions: []},
-            {id:"9", label: "矢印の色 (x)", content: ``, sample: ``, questions: []},
-            {id:"10", label: "メッセージシーケンスの番号付け (x)", content: ``, sample: ``, questions: []},
-            {id:"11", label: "タイトル (x)", content: ``, sample: ``, questions: []},
+            {
+                id:"4", label: "分類子のorder",
+                content: String.raw`order キーワードを使って、分類子が表示される順序を変更することもできます。`,
+                sample: String.raw`
+                @startuml
+                participant Last order 30
+                participant Middle order 20
+                participant First order 10
+                @enduml`,
+                questions: []
+            },
+            {
+                id:"5", label: "別名2",
+                content: String.raw`分類子を定義するときに引用符を使用することができます。そして、分類子にエイリアスを与えるためにキーワード as を使用することができます。`,
+                sample: String.raw`
+                @startuml
+                Alice -> "Bob()" : Hello
+                "Bob()" -> "This is very\nlong" as Long
+                ' You can also declare:
+                ' "Bob()" -> Long as "This is very\nlong"
+                Long --> "Bob()" : ok
+                @enduml`,
+                questions: []
+            },
+            {
+                id:"6", label: "自分自身へのメッセージ",
+                content: String.raw`
+                分類子は自分自身へメッセージを送信できます。
+                \n を使用して、複数行のテキストを扱えます。`,
+                sample: String.raw`
+                @startuml
+                Alice->Alice: This is a signal to self.\nIt also demonstrates\nmultiline \ntext
+                @enduml`,
+                questions: []
+            },
+            {
+                id:"7", label: "Text alignment",
+                content: String.raw`
+                skinparam responseMessageBelowArrow trueコマンドを使うことで、応答メッセージの矢印の下に文字を配置することができます。`,
+                sample: String.raw`
+                @startuml
+                skinparam responseMessageBelowArrow true
+                Bob -> Alice : hello
+                Alice -> Bob : ok
+                @enduml`,
+                questions: []
+            },
+            {id:"8", label: "矢印の見た目 (x)", content: String.raw``, sample: String.raw``, questions: []},
+            {id:"9", label: "矢印の色 (x)", content: String.raw``, sample: String.raw``, questions: []},
+            {id:"10", label: "メッセージシーケンスの番号付け (x)", content: String.raw``, sample: String.raw``, questions: []},
+            {id:"11", label: "タイトル (x)", content: String.raw``, sample: String.raw``, questions: []},
         ]
     },
     {
         label: "ユースケース図", id: "2", children: [
             {
                 id: "1", label: "基本", 
-                content: `
+                content: String.raw`
                 ユースケースは丸括弧で囲んで使います(丸括弧の対は 楕円に似ているからです)。
                 usecase キーワードを使ってユースケースを定義することもできます。 as キーワードを使ってエイリアスを定義することもできます。このエイリアスは あとで、ユースケースの関係を定義するために使います。`,
-                sample: `
+                sample: String.raw`
                 @startuml
 
                 (First usecase)
                 (Another usecase) as (UC2)
                 usecase UC3
-                usecase (Last usecase) as UC4
-                
+                usecase (Last\nusecase) as UC4
+
                 @enduml`,
                 questions: [] },
-            {id: "2", label: "アクター (x)", content: ``, sample: ``, questions: []},
+            {id: "2", label: "アクター (x)", content: String.raw``, sample: String.raw``, questions: []},
         ]
     },
     {
@@ -161,34 +208,34 @@ const texts: TextHead[] = [
         label: "コンポーネント図", id: "6", children: [
             {
                 id: "1", label: "基本",
-                content: `
+                content: String.raw`
                 コンポーネントは括弧でくくります。
                 また、 component キーワードでもコンポーネントを定義できます。 そして、コンポーネントには as キーワードにより別名をつけることができます。 この別名は、後でリレーションを定義するときに使えます。`,
-                sample: `
+                sample: String.raw`
                 @startuml
 
                 [First component]
                 [Another component] as Comp2
                 component Comp3
-                component [Last component] as Comp4
-                
+                component [Last\ncomponent] as Comp4
+
                 @enduml`,
                 questions: []
             },
             {
                 id: "2", label: "インタフェース",
-                content: `
+                content: String.raw`
                 インタフェースは丸括弧 () でシンボルを囲うことで定義できます。 (何故なら見た目が丸いからです。)
                 もちろん interface キーワードを使って定義することもできます。 as キーワードでエイリアスを定義できます。 このエイリアスは後で、関係を定義する時に使えます。
                 後で説明されますが、インタフェースの定義は省略可能です。`,
-                sample: `
+                sample: String.raw`
                 @startuml
-                
+
                 () "First Interface"
                 () "Another interface" as Interf2
                 interface Interf3
-                interface "Last interface" as Interf4
-                
+                interface "Last\ninterface" as Interf4
+
                 [component]
                 footer //Adding "component" to force diagram to be a **component diagram**//
                 @enduml`,
@@ -196,8 +243,8 @@ const texts: TextHead[] = [
             },
             {
                 id: "3", label: "要素感の関係",
-                content: `要素間の関係は、破線 (..)、直線 (--), 矢印 (-->) の組合せで構成されます。`,
-                sample: `
+                content: String.raw`要素間の関係は、破線 (..)、直線 (--), 矢印 (-->) の組合せで構成されます。`,
+                sample: String.raw`
                 @startuml
                 
                 DataAccess - [First Component]
@@ -208,9 +255,9 @@ const texts: TextHead[] = [
             },
             {
                 id: "4", label: "ノート",
-                content: `オブジェクトに関連のあるノートを作成するにはnote left of 、note right of 、note top of 、 note bottom of キーワードを使います。 note left of , note right of , note top of , note bottom of
+                content: String.raw`オブジェクトに関連のあるノートを作成するにはnote left of 、note right of 、note top of 、 note bottom of キーワードを使います。 note left of , note right of , note top of , note bottom of
                 または note キーワードを使ってノートを作成し、.. 記号を使ってオブジェクトに紐づけること ができます。`,
-                sample: `
+                sample: String.raw`
                 @startuml
                 
                 interface "Data Access" as DA
@@ -230,7 +277,7 @@ const texts: TextHead[] = [
             },
             {
                 id: "5", label: "グループ化",
-                content: `
+                content: String.raw`
                 いくつかのキーワードをグループコンポーネントやインタフェースに使用することができます：
                 * package
                 * node
@@ -238,7 +285,7 @@ const texts: TextHead[] = [
                 * frame
                 * cloud
                 * database`,
-                sample: `
+                sample: String.raw`
                 @startuml
 
                 package "Some Group" {
@@ -275,8 +322,8 @@ const texts: TextHead[] = [
             },
             {
                 id: "6", label: "矢印の方向 (x)",
-                content: ``,
-                sample: ``,
+                content: String.raw``,
+                sample: String.raw``,
                 questions: []
             },
         ]
@@ -305,6 +352,7 @@ const helps:Help[] = [
 const PlantumlComponent: FC = () => {
     const [umltext, setUmltext] = useState('A -> B: Hello');
     const [umlImage, setUmlImage] = useState<string>('');
+    const [expanded, setExpanded] = useState(false);
     const [disableTest, setDisableTest] = useState(false);
     const [takeTest, setTakeTest] = useState(false);
     const [text, setText] = useState<JSX.Element>();
@@ -434,8 +482,10 @@ const PlantumlComponent: FC = () => {
             <Grid container spacing={2}>
                 <Grid item xs={12}>
                     PlantUML (<Link href="https://plantuml.com/ja/">LINK</Link>)
+                    <Box display={(!expanded)?'inline':'none'}><IconButton onClick={()=>{setExpanded(true);}}><ExpandMore/></IconButton></Box>
+                    <Box display={(expanded)?'inline':'none'}><IconButton onClick={()=>{setExpanded(false);}}><ExpandLess/></IconButton></Box>
                     {/* ヘルプ */}
-                    <IconButton area-label="help" onClick={handleHelp}><HelpOutline/></IconButton>
+                    <Box display={(expanded)?'inline':'none'}><IconButton area-label="help" onClick={handleHelp}><HelpOutline /></IconButton></Box>
                     <Popover
                         open={helpOpen}
                         anchorEl={helpAnchor}
@@ -461,6 +511,8 @@ const PlantumlComponent: FC = () => {
                     </Dialog>
                 </Grid>
                 <Grid item xs={12}>
+                    {/* <Box display={(expanded)?'inline':'none'}> */}
+                    <Collapse in={expanded}>
                     <Paper>
                         <Grid container spacing={2}>
                             {/* メニュー */}
@@ -481,22 +533,39 @@ const PlantumlComponent: FC = () => {
                                     <Grid item xs={12}>{text}</Grid>
                                     <Grid item xs={6}><Paper elevation={3} style={{padding:7}}>{uml}</Paper></Grid>
                                     <Grid item xs={6}><Paper elevation={3}>{diagram}</Paper></Grid>
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={<Switch checked={takeTest}
+                                                            onChange={handleTakeTest}
+                                                            name="challenge"
+                                                            color="primary"
+                                                            ref={test=> helps[2].ref=test} />
+                                            }
+                                            label="出題"
+                                        />
+                                    </Grid>
                                     <Grid item xs={6}><Box display={(takeTest)?'inline':'none'}><Paper>{test}</Paper></Box></Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
                     </Paper>
+                    </Collapse>
                 </Grid>
                 <Grid item xs={12}>
-                    <TextField
-                        id="plantuml-text"
-                        label="Input Area"
-                        multiline
-                        variant="outlined"
-                        value={umltext}
-                        onChange={(e) => { setUmltext(e.target.value); }}
-                        ref={input=> helps[1].ref=input}
-                    />
+                    <Grid container>
+                        <Grid item xs={6}>
+                            <TextField
+                                id="plantuml-text"
+                                label="Input Area"
+                                fullWidth
+                                multiline
+                                variant="outlined"
+                                value={umltext}
+                                onChange={(e) => { setUmltext(e.target.value); }}
+                                ref={input=> helps[1].ref=input}
+                            />
+                        </Grid>
+                    </Grid>
                 </Grid>
                 <Grid item xs={1}>
                     <Button
@@ -522,20 +591,10 @@ const PlantumlComponent: FC = () => {
                     </Box>
                 </Grid>
                 <Grid item xs={2}>
-                    <FormControlLabel
-                            control={<Switch checked={takeTest}
-                                            onChange={handleTakeTest}
-                                            name="challenge"
-                                            color="primary"
-                                            ref={test=> helps[2].ref=test} />
-                            }
-                            label="出題"
-                        />
+                    
                 </Grid>
                 <Grid item xs={12}>
-                    <Paper>
-                        <img src={umlImage} />
-                    </Paper>
+                    <img src={umlImage} />
                 </Grid>
             </Grid>
         </>} />
