@@ -70,6 +70,7 @@ const menuItems:MenuItem[] = [
   // {text: "page2", link: "/page2"},
   {text: "php", link: "/php"},
   {text: "plantuml", link: "/plantuml"},
+  {text: "mermaid", link: "/mermaid"},
 ];
 
 // export default function Menu() {

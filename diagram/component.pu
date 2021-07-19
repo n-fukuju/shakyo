@@ -4,8 +4,8 @@ node "Web Browser" {
     [HTML]
     [JavaScript]
   }
+  [pib]
   node "WebAssembly" {
-    [pib]
     [PHP]
   }
 }
@@ -17,15 +17,29 @@ emscripten ..> [PHP]
 
 @startuml plantuml
 node "GitHub Pages"{
-    node "Next.js" {
-        [JavaScript]
-        [<img>]
-    }
+  node "Next.js" {
+      [JavaScript]
+      [<img>]
+  }
 }
 node "www.plantuml.com" {
-    [plantuml/img]
+  [plantuml/img]
 }
 
 [JavaScript] --> [<img>] : src URL構築
 [<img>] --> [plantuml/img] : 画像リクエスト
+@enduml
+
+@startuml mermaid
+node "GitHub pages" {
+  node "Next.js" {
+    [JavaScript]
+    [<div>]
+  }
+  [mermaid.js]
+}
+[JavaScript] --down--> [mermaid.js] : 呼び出し
+[mermaid.js] --> [<div>] : svg描画
+
+
 @enduml

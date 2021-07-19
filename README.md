@@ -15,8 +15,16 @@ https://n-fukuju.github.io/shakyo/
 
 ![plantuml](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/plantuml.png)
 
+## Mermaid構成
+- [Mermaid](https://mermaid-js.github.io/mermaid/#/)
+
+![mermaid](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/mermaid.png)
 
 ## ライブラリ等
 - [Ace (Ajax.org Cloud9 Editor)](https://ace.c9.io/)
 - [Next.js](https://nextjs.org/)
 - [Material-UI](https://material-ui.com/)
+
+## 開発
+ローカルで起動する場合、以下の対応を行う。
+- next.config.js の内容をコメントアウトする。
