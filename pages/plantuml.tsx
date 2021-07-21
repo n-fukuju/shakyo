@@ -8,7 +8,6 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import Collapse from '@material-ui/core/Collapse';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -18,43 +17,45 @@ import TreeView from '@material-ui/lab/TreeView';
 import TreeItem from '@material-ui/lab/TreeItem'
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import HelpOutline from '@material-ui/icons/HelpOutline';
 import Popover from '@material-ui/core/Popover';
+
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 
 import plantUmlEncoder from 'plantuml-encoder'
 
 import LayoutComponent from '../components/LayoutComponent';
+import { MenuHead } from '../modules/Commentary';
 
 const urlbase = "http://www.plantuml.com/plantuml/img/";
 
-/** ツリービュー項目 */
-interface TextHead {
-    /** 見出しID */
-    id: string;
-    /** 見出しテキスト */
-    label: string;
-    /** 詳細メニュー */
-    children: Text[];
-}
-/** ツリービュー詳細項目 */
-interface Text {
-    /** 詳細ID */
-    id: string;
-    /** 詳細テキスト */
-    label: string;
-    /** 詳細コンテンツ */
-    content: string;
-    /** サンプルUMLコード */
-    sample: string;
-    /** 例題コレクション */
-    questions: string[];
-}
+// /** ツリービュー項目 */
+// interface TextHead {
+//     /** 見出しID */
+//     id: string;
+//     /** 見出しテキスト */
+//     label: string;
+//     /** 詳細メニュー */
+//     children: Text[];
+// }
+// /** ツリービュー詳細項目 */
+// interface Text {
+//     /** 詳細ID */
+//     id: string;
+//     /** 詳細テキスト */
+//     label: string;
+//     /** 詳細コンテンツ */
+//     content: string;
+//     /** サンプルUMLコード */
+//     sample: string;
+//     /** 例題コレクション */
+//     questions: string[];
+// }
 // String.raw() を使用することで、改行文字（\n）をそのまま出力する。
-const texts: TextHead[] = [
+const texts: MenuHead[] = [
     {
         label: "シーケンス図", id: "1", children: [
             {
@@ -169,10 +170,380 @@ const texts: TextHead[] = [
                 @enduml`,
                 questions: []
             },
-            {id:"8", label: "矢印の見た目 (x)", content: String.raw``, sample: String.raw``, questions: []},
-            {id:"9", label: "矢印の色 (x)", content: String.raw``, sample: String.raw``, questions: []},
-            {id:"10", label: "メッセージシーケンスの番号付け (x)", content: String.raw``, sample: String.raw``, questions: []},
-            {id:"11", label: "タイトル (x)", content: String.raw``, sample: String.raw``, questions: []},
+            {
+                id:"8", label: "矢印の見た目",
+                content: String.raw`
+                矢印の見た目をいくつかの方法によって変更できます。
+                ・メッセージの消失を示す最後の x を追加
+                ・\ や / を < や > の代わりに使うと
+                ・矢印の先端が上側だけまたは下側だけになります。
+                ・矢印の先端を繰り返す (たとえば >> や //) と、矢印の先端が細くなります。
+                ・-- を - の代わりに使うと、矢印が点線になります。
+                ・矢じりに最後の "O" を追加
+                ・双方向の矢印を使用する`,
+                sample: String.raw`
+                @startuml
+                Bob ->x Alice
+                Bob -> Alice
+                Bob ->> Alice
+                Bob -\ Alice
+                Bob \\- Alice
+                Bob //-- Alice
+
+                Bob ->o Alice
+                Bob o\\-- Alice
+
+                Bob <-> Alice
+                Bob <->o Alice
+                @enduml`, 
+                questions: []
+            },
+            {
+                id:"9", label: "矢印の色",
+                content: String.raw`以下の表記を使って、個々の矢印の色を変えることができます。`,
+                sample: String.raw`
+                @startuml
+                Bob -[#red]> Alice : hello
+                Alice -[#0000FF]->Bob : ok
+                @enduml`,
+                questions: []
+            },
+            {
+                id:"10", label: "シーケンスの番号付け",
+                content: String.raw`
+                メッセージへ自動で番号を振るために、キーワード autonumber を使います。
+                autonumber //開始// で開始番号を、また、autonumber //開始// //増分// で増分も指定することができます。`,
+                sample: String.raw`
+                @startuml
+                autonumber
+                Bob -> Alice : Authentication Request
+                Bob <- Alice : Authentication Response
+
+                autonumber 15
+                Bob -> Alice : Another authentication Request
+                Bob <- Alice : Another authentication Response
+
+                autonumber 40 10
+                Bob -> Alice : Yet another authentication Request
+                Bob <- Alice : Yet another authentication Response
+
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "11", label: "シーケンスの番号付け2",
+                content: String.raw`
+                二重引用符で囲って番号の書式を指定することができます。
+                その書式指定は Java の DecimalFormat 方式で行う（0 は桁を表し, # は存在しない場合は 0 で埋める桁を意味する）。
+                HTMLタグを書式に使うこともできます。
+                autonumber stop と autonumber resume //増分// //書式// を自動採番の一時停止と再開にそれぞれを使用することができます。`,
+                sample: String.raw`
+                autonumber "<b>[000]"
+                Bob -> Alice : Authentication Request
+                Bob <- Alice : Authentication Response
+
+                autonumber 15 "<b>(<u>##</u>)"
+                Bob -> Alice : Another authentication Request
+                Bob <- Alice : Another authentication Response
+
+                autonumber 40 10 "<font color=red><b>Message 0  "
+                Bob -> Alice : Yet another authentication Request
+                Bob <- Alice : Yet another authentication Response
+                
+                autonumber stop
+                Bob -> Alice : dummy
+
+                autonumber resume "<font color=red><b>Message 0  "
+                Bob -> Alice : Yet another authentication Request
+                Bob <- Alice : Yet another authentication Response
+
+                autonumber stop
+                Bob -> Alice : dummy
+
+                autonumber resume 1 "<font color=blue><b>Message 0  "
+                Bob -> Alice : Yet another authentication Request
+                Bob <- Alice : Yet another authentication Response`,
+                questions: []
+            },
+            {
+                id: "12", label: "タイトル",
+                content: String.raw`
+                titleキーワードはページにタイトルをつけるのに使われます。
+                headerやfooterを使うことにより、ページにヘッダーやフッターをつけて表示することができます。`,
+                sample: String.raw`
+                @startuml
+
+                header Page Header
+                footer Page %page% of %lastpage%
+
+                title Example Title
+
+                Alice -> Bob : message 1
+                Alice -> Bob : message 2
+
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "13", label: "図の分割",
+                content: String.raw`
+                図を複数の画像に分けるためにキーワード newpage を使います。
+                新しいページのタイトルをキーワード newpage の直後に書くことができます。
+                これは、複数ページにわたる長い図を書くときに便利な機能です。`,
+                sample: String.raw`
+                @startuml
+
+                Alice -> Bob : message 1
+                Alice -> Bob : message 2
+
+                newpage
+
+                Alice -> Bob : message 3
+                Alice -> Bob : message 4
+
+                newpage A title for the\nlast page
+
+                Alice -> Bob : message 5
+                Alice -> Bob : message 6
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "14", label: "メッセージのグループ化",
+                content: String.raw`
+                次のキーワードを使えば、メッセージをまとめてグループ化できます。
+                alt/else
+                opt
+                loop
+                par
+                break
+                critical
+                group表示するテキスト
+                ヘッダ部分に文字列を追加することが可能です。(groupについては、後述の「groupの2つ目のラベル」を参照)
+                グループを閉じるにはキーワード end を使用します。
+                注：グループはネスト可能です。`,
+                sample: String.raw`
+                @startuml
+                Alice -> Bob: Authentication Request
+
+                alt successful case
+
+                    Bob -> Alice: Authentication Accepted
+
+                else some kind of failure
+
+                    Bob -> Alice: Authentication Failure
+                    group My own label
+                    Alice -> Log : Log attack start
+                        loop 1000 times
+                            Alice -> Bob: DNS Attack
+                        end
+                    Alice -> Log : Log attack end
+                    end
+
+                else Another type of failure
+
+                Bob -> Alice: Please repeat
+
+                end
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "15", label: "groupの2つ目のラベル",
+                content: String.raw`groupでは、[と]の間に2つ目のラベルを設定し、ヘッダに表示させることができます。`,
+                sample: String.raw`
+                @startuml
+                Alice -> Bob: Authentication Request
+                Bob -> Alice: Authentication Failure
+                group My own label [My own label 2]
+                    Alice -> Log : Log attack start
+                    loop 1000 times
+                        Alice -> Bob: DNS Attack
+                    end
+                    Alice -> Log : Log attack end
+                end
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "16", label: "ノート",
+                content: String.raw`
+                メッセージのすぐ後ろにキーワード note left または note right を使用し、メッセージにノートを付けることが可能です。
+                end note キーワードを使って、複数行のノートを作ることができます。`,
+                sample: String.raw`
+                @startuml
+                Alice->Bob : hello
+                note left: this is a first note
+
+                Bob->Alice : ok
+                note right: this is another note
+
+                Bob->Bob : I am thinking
+                note left
+                a note
+                can also be defined
+                on several lines
+                end note
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "17", label: "その他のノート",
+                content: String.raw`
+                note left of、note right of、note overのキーワードを使って、分類子からの相対位置を指定してノートを配置することもできます。
+                ノートを目立たせるために、背景色を変えることができます。
+                また、キーワード end note を使って複数行のノートを作ることができます。`,
+                sample: String.raw`
+                @startuml
+                participant Alice
+                participant Bob
+                note left of Alice #aqua
+                This is displayed
+                left of Alice.
+                end note
+
+                note right of Alice: This is displayed right of Alice.
+
+                note over Alice: This is displayed over Alice.
+
+                note over Alice, Bob #FFAAAA: This is displayed\n over Bob and Alice.
+
+                note over Bob, Alice
+                This is yet another
+                example of
+                a long note.
+                end note
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "18", label: "ノートの形",
+                content: String.raw`
+                キーワード hnote と rnote を使ってノートの形を変更できます。
+                ・hnoteで六角形のノートになります
+                ・rnoteで四角形のノートになります`,
+                sample: String.raw`
+                @startuml
+                caller -> server : conReq
+                hnote over caller : idle
+                caller <- server : conConf
+                rnote over server
+                "r" as rectangle
+                "h" as hexagon
+                endrnote
+                rnote over server
+                this is
+                on several
+                lines
+                endrnote
+                hnote over caller
+                this is
+                on several
+                lines
+                endhnote
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "19", label: "すべての分類子にまたがるノート",
+                content: String.raw`
+                次の構文で、すべての分類子にまたがるノートを直接作ることができます：
+                ・note across: ノートの記述`,
+                sample: String.raw`
+                @startuml
+                Alice->Bob:m1
+                Bob->Charlie:m2
+                note over Alice, Charlie: Old method for note over all part. with:\n ""note over //FirstPart, LastPart//"".
+                note across: New method with:\n""note across""
+                Bob->Alice
+                hnote across:Note across all part.
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "20", label: "複数のノートを同じレベルに並べる",
+                content: String.raw`
+                /を使って、複数のノートを同じレベルに並べることができます：
+                /を使わない場合（デフォルトでは、ノートは整列されません）`,
+                sample: String.raw`
+                @startuml
+                note over Alice : initial state of Alice
+                note over Bob : initial state of Bob
+                Bob -> Alice : hello
+
+                note over Alice : initial state of Alice
+                / note over Bob : initial state of Bob
+                Bob -> Alice : hello
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "21", label: "CreoleとHTML",
+                content: String.raw`PlantUML では creole フォーマットを使うこともできます。`,
+                sample: String.raw`
+                @startuml
+                participant Alice
+                participant "The **Famous** Bob" as Bob
+
+                Alice -> Bob : hello --there--
+                ... Some ~~long delay~~ ...
+                Bob -> Alice : ok
+                note left
+                This is **bold**
+                This is //italics//
+                This is ""monospaced""
+                This is --stroked--
+                This is __underlined__
+                This is ~~waved~~
+                end note
+
+                Alice -> Bob : A //well formatted// message
+                note right of Alice
+                This is <back:cadetblue><size:18>displayed</size></back>
+                __left of__ Alice.
+                end note
+                note left of Bob
+                <u:red>This</u> is <color #118888>displayed</color>
+                **<color purple>left of</color> <s:red>Alice</strike> Bob**.
+                end note
+                note over Alice, Bob
+                <w:#FF33FF>This is hosted</w> by <img sourceforge.jpg>
+                end note
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "22", label: "境界線（区切り線）",
+                content: String.raw`== を使って、図を論理的なステップに分けることも出来ます。`,
+                sample: String.raw`
+                @startuml
+
+                == Initialization ==
+
+                Alice -> Bob: Authentication Request
+                Bob --> Alice: Authentication Response
+
+                == Repetition ==
+
+                Alice -> Bob: Another authentication Request
+                Alice <-- Bob: another authentication Response
+
+                @enduml`,
+                questions: []
+            },
+            {
+                id: "23", label: "リファレンス (x)",
+                content: String.raw``,
+                sample: String.raw``,
+                questions: []
+            },
+            {
+                id: "", label: "",
+                content: String.raw``,
+                sample: String.raw``,
+                questions: []
+            },
         ]
     },
     {
@@ -350,7 +721,31 @@ const helps:Help[] = [
 ];
 
 const PlantumlComponent: FC = () => {
-    const [umltext, setUmltext] = useState('A -> B: Hello');
+    const [umltext, setUmltext] = useState(`header OAuth
+actor "リソースオーナー" as owner
+participant "サードパーティ\\nクライアント" as client
+participant "認可サーバ" as auth
+participant "リソースサーバ" as resource
+owner -> client: 操作
+activate client
+client -> auth: 認証要求
+activate auth
+auth -> owner: 認証要求
+activate owner
+owner -> auth: 認証情報入力
+deactivate owner
+auth -> owner: 認可グラントの要求
+activate owner
+owner -> auth: 権限委譲を認可
+deactivate owner
+auth -> client: アクセストークン返却
+deactivate auth
+client -> resource: リクエスト（アクセストークン）
+activate resource
+resource -> client: 応答
+deactivate resource
+client -> owner: 応答
+deactivate client`);
     const [umlImage, setUmlImage] = useState<string>('');
     const [expanded, setExpanded] = useState(false);
     const [disableTest, setDisableTest] = useState(false);
@@ -383,12 +778,10 @@ const PlantumlComponent: FC = () => {
         for (let head of texts) {
             for (let item of head.children) {
                 if (head.id == nodes[0] && item.id == nodes[1]) {
-                    setText(
-                    <>
+                    setText(<>
                         {item.content.split('\n').map( (line, index) => { return (<Typography variant="body2" key={index}>{line}</Typography>) })}
                     </>);
-                    setUml(
-                    <>
+                    setUml(<>
                         {item.sample.split('\n').map( (line, index) => { return (<Typography variant="body2" key={index}>{line}</Typography>) })}
                     </>);
                     if (item.sample !== "") {
@@ -481,11 +874,11 @@ const PlantumlComponent: FC = () => {
         <LayoutComponent title="PlantUML" page="plantuml" content={<>
             <Grid container spacing={2}>
                 <Grid item xs={12}>
-                    PlantUML (<Link href="https://plantuml.com/ja/">LINK</Link>)
-                    <Box display={(!expanded)?'inline':'none'}><IconButton onClick={()=>{setExpanded(true);}}><ExpandMore/></IconButton></Box>
-                    <Box display={(expanded)?'inline':'none'}><IconButton onClick={()=>{setExpanded(false);}}><ExpandLess/></IconButton></Box>
+                    PlantUML (<Link href="https://plantuml.com/ja/">plantuml.com</Link>)
+                    <Box display={(!expanded)?'inline':'none'}><IconButton onClick={()=>{setExpanded(true);}}><ExpandMoreIcon/></IconButton></Box>
+                    <Box display={(expanded)?'inline':'none'}><IconButton onClick={()=>{setExpanded(false);}}><ExpandLessIcon/></IconButton></Box>
                     {/* ヘルプ */}
-                    <Box display={(expanded)?'inline':'none'}><IconButton area-label="help" onClick={handleHelp}><HelpOutline /></IconButton></Box>
+                    <Box display={(expanded)?'inline':'none'}><IconButton area-label="help" onClick={handleHelp}><HelpOutlineIcon /></IconButton></Box>
                     <Popover
                         open={helpOpen}
                         anchorEl={helpAnchor}
