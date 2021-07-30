@@ -1706,7 +1706,7 @@ participant "リソースサーバ" as resource
 end box
 owner -> client: 操作
 activate client
-client -> auth: 認証要求
+client -> auth: アクセストークン要求
 activate auth
 auth -> owner: 認証要求
 activate owner
@@ -1716,7 +1716,7 @@ auth -> owner: 認可グラントの要求
 activate owner
 owner -> auth: 権限委譲を認可
 deactivate owner
-auth -> client: アクセストークン返却
+auth -> client: アクセストークン発行
 deactivate auth
 client -> resource: リクエスト（アクセストークン）
 activate resource

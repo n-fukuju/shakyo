@@ -25,23 +25,135 @@ import { StylesContext } from '@material-ui/styles';
 
 const texts: MenuHead[] = [
     {
-        id: "1", label: "フローチャート", children: [
+        id: "1", label: "フロー図", children: [
             {
                 id: "1", label: "基本",
                 content: String.raw`
-                TD は上下を指定します。
-                センテンスはフローチャートの方向を指定します。`,
+                フローチャートは主にノードとラインで構成されます。
+                ノードIDを記載すると、ボックス内にノードIDが表示されます。
+                ノードIDの代わりにテキストを表示したい場合、ノードIDの後ろに [ ] で指定します。
+                （'end'は予約語のため、ノードIDに使用しないでください）`,
                 sample: String.raw`
                 graph TD
+                  Start
+                  Stop[end of chart]
                   Start --> Stop`,
                 questions:[]
             },
             {
-                id: "2", label: "横",
-                content: String.raw`横方向`,
+                id: "2", label: "方向",
+                content: String.raw`
+                フローチャートで指定できる方向は以下の通りです:
+                * TB - Top to Bottom
+                * TD - Top to Down (same as TB)
+                * BT - Bottom to Top
+                * RL - Right to Left
+                * LR - Left to Right`,
                 sample: String.raw`
                 graph LR
                   Start --> Stop`,
+                questions:[]
+            },
+            {
+                id: "3", label: "図形",
+                content: String.raw``,
+                sample: String.raw`
+                graph TD
+                  id1(Round edges)
+                  id1---id2([stadium-shaped])
+                  id2---id3[[Subroutine]]
+                  id3---id4[(Database)]
+                  id4---id5((Circle))
+                  id5---id6>Asymmetric]
+                  id6---id7{Rhombus}
+                  id7---id8{{Hexagon}}
+                  id8---id9[/Parallelogram/]
+                  id9---id10[\Parallelogram alt\]
+                  id10---id11[/Trapezoid\]
+                  id11---id12[\Trapezoid alt/]`,
+                questions:[]
+            },
+            {
+                id: "4", label: "リンク",
+                content: String.raw`
+                ノードを接続するリンクは、矢印の形状を変更することができます。
+                また、リンク上に、テキストを添付できます。`,
+                sample: String.raw`
+                graph LR
+                  id1[Arrow head] --> id1_2[end]
+                  id2[Open link] --- id2_2[end]
+                  id3[Text on links] -- text --- id3_2[end]
+                  id4[Text on links2] ---|text| id4_2[end]
+                  id5[Dotted] -.-> id5_2[end]
+                  id6[Dotted with text] -. text .-> id6_2[end]
+                  id7[Thick link] ==> id7_2[end]
+                  id8[one line] --> id8_2 --> id8_3`,
+                questions:[]
+            },
+            {
+                id: "5", label: "リンクの連鎖",
+                content: String.raw`
+                一行で複数のリンクを表現することができます。
+                `,
+                sample: String.raw`
+                graph LR
+                A -- text --> B -- text2 --> C
+                a --> b & c --> d
+                e & f --> g & h`,
+                questions:[]
+            },
+            {
+                id: "6", label: "flowchart",
+                content: String.raw`
+                graph の代わりに flowchart を宣言すると、以下の矢印タイプと、双方向の矢印が使用できます。`,
+                sample: String.raw`
+                flowchart LR
+                A --o B
+                B --x C
+                a <--> b
+                `,
+                questions:[]
+            },
+            {
+                id: "7", label: "リンクの最小の長さ",
+                content: String.raw`（未）`,
+                sample: String.raw`
+                graph TD
+                A[Start] --> B{Is it?};
+                B -->|Yes| C[OK];
+                C --> D[Rethink];
+                D --> B;
+                B ---->|No| E[End];
+                `,
+                questions:[]
+            },
+            {
+                id: "8", label: "エスケープ",
+                content: String.raw`
+                構文エラーが出るようなテキストを含む場合は、テキストを引用符で囲みます。`,
+                sample: String.raw`
+                graph LR
+                id1["This is the (text) in the box"]
+                A["A double quote:#quot;"] -->B["A dec char:#9829;"]
+                `,
+                questions:[]
+            },
+            {
+                id: "9", label: "サブグラフ",
+                content: String.raw``,
+                sample: String.raw`
+                graph TB
+                c1-->a2
+                subgraph one
+                a1-->a2
+                end
+                subgraph two
+                b1-->b2
+                end
+                subgraph three
+                c1-->c2
+                end
+                `,
                 questions:[]
             },
             {
@@ -49,12 +161,18 @@ const texts: MenuHead[] = [
                 content: String.raw``,
                 sample: String.raw``,
                 questions:[]
-            }
+            },
         ]
     },
     {
-        id: "2", label: "xxx", children: []
-    }
+        id: "2", label: "シーケンス図", children: []
+    },
+    {
+        id: "3", label: "クラス図", children: []
+    },
+    {
+        id: "4", label: "状態遷移図", children: []
+    },
 ]
 
 declare var mermaid:Mermaid;
