@@ -65,12 +65,22 @@ const PhpComponent: FC=()=>{
                             setOutText('');
                             var code = editor.getValue();
                             code = code.replace(/^\s*<\?php/, "") // remove <?php
+                            // set code in here document
+                            code = `
+try{
+    $code = <<<EOT
+    ${code}
+EOT;
+    eval($code);
+}catch(ParseError $e){ echo $e; }`;
                             code = code + "\necho PHP_EOL;" // flush line buffer
+                            console.log(code);
                             try{
                                 let ret = php.ccall('pib_run', 'number', ['string'], [code]);
                                 if(ret != 0){
                                     console.log('error from php.ccall: ', ret);
-                                    setOutText( `error: ${ret}` );
+                                    let message = `error: ${ret}`;
+                                    setOutText( prevText => prevText + message + "\n" );
                                     setHasError(true);
                                 }
                             }catch(ex){
