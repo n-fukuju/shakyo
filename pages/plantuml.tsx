@@ -1929,7 +1929,35 @@ deactivate client`);
                 </Grid>
                 <Grid item xs={12}>
                     <Grid container>
-                        <Grid item xs={6}>
+                        <Grid item xs={1}>
+                            <Button
+                                id="button"
+                                variant="outlined"
+                                color="primary"
+                                onClick={handleExecute}
+                            >
+                                Run
+                            </Button>
+                        </Grid>
+                        <Grid item xs={2}>
+                            <Box display={(takeTest)?'inline':'none'}>
+                            <Button
+                                id="submit"
+                                variant="outlined"
+                                color="secondary"
+                                onClick={handleSubmit}
+                                disabled={disableTest}
+                            >
+                                Submit
+                            </Button>
+                            </Box>
+                        </Grid>
+
+                    </Grid>
+                </Grid>
+                <Grid item xs={12}>
+                    <Grid container>
+                        <Grid item xs={5}>
                             <TextField
                                 id="plantuml-text"
                                 label="Input Area"
@@ -1941,36 +1969,10 @@ deactivate client`);
                                 ref={input=> helps[1].ref=input}
                             />
                         </Grid>
+                        <Grid item xs={7}>
+                            <img src={umlImage} />
+                        </Grid>
                     </Grid>
-                </Grid>
-                <Grid item xs={1}>
-                    <Button
-                        id="button"
-                        variant="outlined"
-                        color="primary"
-                        onClick={handleExecute}
-                    >
-                        Run
-                    </Button>
-                </Grid>
-                <Grid item xs={2}>
-                    <Box display={(takeTest)?'inline':'none'}>
-                    <Button
-                        id="submit"
-                        variant="outlined"
-                        color="secondary"
-                        onClick={handleSubmit}
-                        disabled={disableTest}
-                    >
-                        Submit
-                    </Button>
-                    </Box>
-                </Grid>
-                <Grid item xs={2}>
-                    
-                </Grid>
-                <Grid item xs={12}>
-                    <img src={umlImage} />
                 </Grid>
             </Grid>
         </>} />

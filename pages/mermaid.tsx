@@ -277,8 +277,11 @@ const MermaidComponent: FC = () => {
                     </Collapse>
                 </Grid>
                 <Grid item xs={12}>
+                    <Button color="primary" variant="outlined" onClick={handleExecute} >Run</Button>
+                </Grid>
+                <Grid item xs={12}>
                     <Grid container>
-                        <Grid item xs={6}>
+                        <Grid item xs={5}>
                             <TextField
                                 id="mermaid-text"
                                 label="Input Area"
@@ -289,14 +292,10 @@ const MermaidComponent: FC = () => {
                                 onChange={(e) => {setMermaidInput(e.target.value); }}
                             />
                         </Grid>
+                        <Grid item xs={7}>
+                    <div id={mermaidOutputId}></div>
+                        </Grid>
                     </Grid>
-                </Grid>
-                <Grid item xs={12}>
-                    <Button color="primary" variant="outlined" onClick={handleExecute} >Run</Button>
-                </Grid>
-                <Grid item xs={12}>
-                    <div id={mermaidOutputId}>
-                    </div>
                 </Grid>
                 <Script src={router.basePath + "/scripts/mermaid/mermaid.min.js"} />
             </Grid>
