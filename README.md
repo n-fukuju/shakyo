@@ -12,6 +12,7 @@ https://n-fukuju.github.io/shakyo/
 ## PlantUML構成
 - [PlantUML](https://plantuml.com/ja/)
 - [PlantUML FAQ](https://plantuml.com/ja/faq)
+- [PlantUML Javascript Client](https://plantuml.com/ja/demo-javascript-synchronous)
 
 ![plantuml](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/plantuml.png)
 
