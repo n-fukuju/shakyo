@@ -66,9 +66,11 @@ const PhpComponent: FC=()=>{
                             var code = editor.getValue();
                             code = code.replace(/^\s*<\?php/, "") // remove <?php
                             // set code in here document
+                            // PHP はトップレベルのコードの文法エラーはキャッチできないため、evalで実行する。
+                            // ヒアドキュメント内の変数を展開させないようシングルクォートで囲む。
                             code = `
 try{
-    $code = <<<EOT
+    $code = <<<'EOT'
     ${code}
 EOT;
     eval($code);
