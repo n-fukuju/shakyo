@@ -7,8 +7,10 @@ const PhpLangComponent: FC=()=>{
     return (
         <PhpEditorComponent pages={[
             {
-                title: "見出し1",
+                title: "型",
                 content: String.raw`
+[型 - PHP](https://www.php.net/manual/ja/language.types.php)
+
 PHPは10種類の基本型をサポートします。
 
 **4種類のスカラ型**
