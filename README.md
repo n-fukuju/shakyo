@@ -21,6 +21,9 @@ https://n-fukuju.github.io/shakyo/
 
 ![mermaid](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/mermaid.png)
 
+## Drawer構成
+![Drawer](https://github.com/n-fukuju/shakyo/raw/master/out/diagram/component/drawer.png)
+
 ## ライブラリ等
 - [Ace (Ajax.org Cloud9 Editor)](https://ace.c9.io/)
 - [Next.js](https://nextjs.org/)

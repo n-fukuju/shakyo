@@ -43,3 +43,24 @@ node "GitHub pages" {
 
 
 @enduml
+
+@startuml drawer
+node "Web Browser" {
+  node "Nextjs" {
+    [JavaScript]
+    [Canvas]
+  }
+  node "Tensorflow.js" {
+    [モデル(js)]
+  }
+}
+[JavaScript] --> [Canvas]: 画像データ取得、セット
+[JavaScript] --> [モデル(js)]: 推論の呼び出し
+
+[手書き画像] ..> tensorflow: トレーニング
+[ラベル情報] ..> tensorflow
+tensorflow ..> [モデル]
+[モデル] ..> tensorflowjs_wizard: ブラウザ向けに変換
+tensorflowjs_wizard ..> [モデル(js)]
+
+@enduml
