@@ -1,31 +1,79 @@
 import { FC, useEffect, useState, MouseEvent, TouchEvent } from 'react';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import ClearIcon from '@material-ui/icons/Clear';
+import UndoIcon from '@material-ui/icons/Undo';
+import CreateIcon from '@material-ui/icons/Create';
+import ClearAllIcon from '@material-ui/icons/ClearAll';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
 import * as tfjs from '@tensorflow/tfjs';
 import { loadGraphModel } from '@tensorflow/tfjs-converter';
+import Tesseract from 'tesseract.js';
+import plantUmlEncoder from 'plantuml-encoder';
+const plantuml = 'http://www.plantuml.com/plantuml/img/';
 
+
+//** 座標 */
 interface Pos{
     x:number;
     y:number;
 }
+/** 検出オブジェクト */
+class Detection{
+    constructor(
+        public cls:number,
+        public score:string,
+        public x:number,
+        public y:number,
+        public width:number,
+        public height:number
+    ){}
+    /** 当たり判定 */
+    collision(target:Detection){
+        return this.x < target.x + target.width &&
+                this.x + this.width > target.width &&
+                this.y < target.y + target.height &&
+                this.y + this.height > target.y;
+    }
+}
 
 const UmlDrawerComponent: FC=()=>{
+    const [initialized, setInitialized] = useState(false);
+    const [supply, setSupply] = useState('brush');
+    const [text, setText] = useState('');
+    const [imgSrc, setImgSrc] = useState('');
+
     /** 描画中フラグ */
-    let dragging=false;
+    // let dragging=false;
+    const [dragging, setDragging] = useState(false);
     /** 合成表示用のキャンバス */
-    let canvasView:HTMLCanvasElement;
+    // let canvasView:HTMLCanvasElement;
+    const [canvasView, setCanvasView] = useState<HTMLCanvasElement>();
     /** 描画用のキャンバス（非表示） */
-    let canvasDraw:HTMLCanvasElement;
+    // let canvasDraw:HTMLCanvasElement;
+    const [canvasDraw, setCanvasDraw] = useState<HTMLCanvasElement>();
     /** 2Dコンテキスト */
-    let ctxView:CanvasRenderingContext2D;
+    // let ctxView:CanvasRenderingContext2D;
+    const [ctxView, setCtxView] = useState<CanvasRenderingContext2D>();
     /** 2Dコンテキスト */
-    let ctxDraw:CanvasRenderingContext2D;
+    // let ctxDraw:CanvasRenderingContext2D;
+    const [ctxDraw, setCtxDraw] = useState<CanvasRenderingContext2D>();
     /** 描画の履歴 */
-    let history:ImageData[]=[];
+    // let history:ImageData[]=[];
+    const [history, setHistory] = useState<ImageData[]>([]);
     /** オブジェクト検出モデル */
-    let model:tfjs.GraphModel;
+    // let model:tfjs.GraphModel;
+    const [model, setModel] = useState<tfjs.GraphModel>();
     /** 描画開始座標 */
-    let startPos:Pos={x:0,y:0};
+    // let startPos:Pos={x:0,y:0};
+    const [startPos, setStartPos] = useState<Pos>({x:0,y:0})
     /** 描画中の直前の座標 */
-    let prevPos:Pos={x:0,y:0};
+    // let prevPos:Pos={x:0,y:0};
+    const [prevPos, setPrevPos] = useState<Pos>({x:0,y:0});
     /** 推論の採用閾値（暫定） */
     const thresold = 0.50;
     /** クラスラベル */
@@ -45,35 +93,65 @@ const UmlDrawerComponent: FC=()=>{
         '13':{name: 'arrow_left_up'},
         '14':{name: 'arrow_left_down'},
     };
+    /** 矢印 */
+    const usecaseArrows = [7,8,9,10,11,12,13,14];
     useEffect(()=>{
-        try{
-            canvasView = document.getElementById('canvas') as HTMLCanvasElement;
-            canvasDraw = document.createElement('canvas');
-            [canvasDraw.width, canvasDraw.height] = [canvasView.width, canvasView.height];
-            const cv = canvasView.getContext('2d');
-            if(cv){ ctxView = cv; }
-            const cd = canvasDraw.getContext('2d');
-            if(cd){ ctxDraw = cd; }
-            clear();
-            // モデルの読み込み
-            tfjs.setBackend('webgl');
-            loadGraphModel('tfjs_models/web_model/model.json').then( m=> model = m );
-        }catch(e){
-            console.log(e);
+        // console.log('use effect');
+        if(!initialized){
+            console.log('constructor');
+            try{
+                // canvasView = document.getElementById('canvas') as HTMLCanvasElement;
+                // canvasDraw = document.createElement('canvas');
+                // [canvasDraw.width, canvasDraw.height] = [canvasView.width, canvasView.height];
+                // const cv = canvasView.getContext('2d');
+                // if(cv){ ctxView = cv; }
+                // const cd = canvasDraw.getContext('2d');
+                // if(cd){ ctxDraw = cd; }
+                let view = document.getElementById('canvas') as HTMLCanvasElement;
+                let draw = document.createElement('canvas');
+                [draw.width, draw.height] = [view.width, view.height];
+                setCanvasView(view);
+                setCanvasDraw(draw);
+                const cv = view.getContext('2d');
+                if(cv){ setCtxView(cv); }
+                const cd = draw.getContext('2d');
+                if(cd){ setCtxDraw(cd); }
+
+                clear(view, draw, cv, cd);
+
+                // モデルの読み込み
+                tfjs.setBackend('webgl');
+                loadGraphModel('tfjs_models/web_model/model.json').then( m=> setModel(m) );
+                setInitialized(true);
+            }catch(e){
+                console.log(e);
+            }
         }
     });
 
     /** 描画開始 */
     const start = (pageX:number, pageY:number)=>{
-        dragging=true;
-        ctxView.strokeStyle = 'black';
-        ctxView.lineWidth = 1;
-        ctxDraw.strokeStyle = 'black';
-        ctxDraw.lineWidth = 1;
-        startPos = getPos(pageX, pageY);
-        prevPos = startPos;
+        if(!ctxView || !ctxDraw || !canvasDraw){ return; }
+
+        // dragging=true;
+        setDragging(true);
+        // ctxView.strokeStyle = 'black';
+        // ctxView.lineWidth = 1;
+        if(supply === 'brush'){
+            ctxDraw.strokeStyle = 'black';
+            ctxDraw.lineWidth = 1;
+        } else if(supply === 'eraser'){
+            ctxDraw.strokeStyle = 'white';
+            ctxDraw.lineWidth = 20;
+        }
+        // startPos = getPos(pageX, pageY);
+        // prevPos = startPos;
+        const pos = getPos(pageX, pageY);
+        setStartPos(pos);
+        setPrevPos(pos);
         // history.push(ctxView.getImageData(0,0, canvasView.width, canvasView.height));
-        history.push(ctxDraw.getImageData(0, 0, canvasDraw.width, canvasDraw.height));
+        // history.push(ctxDraw.getImageData(0, 0, canvasDraw.width, canvasDraw.height));
+        history.push(ctxDraw.getImageData(0,0, canvasDraw.width, canvasDraw.height));
     }
     const mouseDown = (e: MouseEvent<HTMLCanvasElement>)=>{
         start(e.pageX, e.pageY);
@@ -86,6 +164,8 @@ const UmlDrawerComponent: FC=()=>{
     /** 描画中 */
     const move = (pageX:number, pageY:number)=>{
         if(dragging){
+            if(!ctxDraw || !ctxView || !canvasView){ return; }
+
             let pos = getPos(pageX, pageY);
             // ctxView.beginPath();
             // ctxView.moveTo(prevPos.x, prevPos.y);
@@ -96,7 +176,8 @@ const UmlDrawerComponent: FC=()=>{
             ctxDraw.lineTo(pos.x, pos.y);
             ctxDraw.stroke();
             ctxView.putImageData(ctxDraw.getImageData(0,0, canvasView.width, canvasView.height), 0, 0);
-            prevPos = pos;
+            // prevPos = pos;
+            setPrevPos(pos);
         }
     }
     const mouseMove = (e: MouseEvent<HTMLCanvasElement>)=>{
@@ -109,7 +190,8 @@ const UmlDrawerComponent: FC=()=>{
     }
     /** 描画終了 */
     const end = ()=>{
-        dragging=false;
+        // dragging=false;
+        setDragging(false);
         execute();
     }
     const mouseUp = (e: MouseEvent<HTMLCanvasElement>)=>{
@@ -122,13 +204,23 @@ const UmlDrawerComponent: FC=()=>{
         end();
     }
     const getPos=(x:number,y:number):Pos=>{
-        return {
-            x: x - canvasView.getBoundingClientRect().left,
-            y: y - canvasView.getBoundingClientRect().top
-        };
+        // return {
+        //     x: x - canvasView.getBoundingClientRect().left,
+        //     y: y - canvasView.getBoundingClientRect().top
+        // };
+        let pos:Pos = {x:0,y:0};
+        if(canvasView){
+            pos = {
+                    x: x - canvasView.getBoundingClientRect().left,
+                    y: y - canvasView.getBoundingClientRect().top
+                };
+        }
+        return pos;
     }
     /** 処理 */
     const execute = async()=>{
+        if(!canvasView || !ctxView || !model){ return; }
+
         // 画像取得
         const image = tfjs.browser.fromPixels(canvasView);
         const expandedimg = image.toInt().transpose([0,1,2]).expandDims();
@@ -150,84 +242,239 @@ const UmlDrawerComponent: FC=()=>{
 
 
 
-        const detections:any[]=[];
+        const detections:Detection[]=[];
         scores[0].forEach((score,i)=>{
             if(score>thresold){
-                const bbox = [];
                 const minY = boxes[0][i][0] as number * canvasView.height;
                 const minX = boxes[0][i][1] as number * canvasView.width;
                 const maxY = boxes[0][i][2] as number * canvasView.height;
                 const maxX = boxes[0][i][3] as number * canvasView.width;
-                bbox[0] = minX;
-                bbox[1] = minY;
-                bbox[2] = maxX - minX;
-                bbox[3] = maxY - minY;
-                // TODO クラス化
-                detections.push({
-                    class: classes[i],
-                    score: score.toFixed(4),
-                    bbox: bbox
-                });
+                detections.push(new Detection(
+                    classes[i],
+                    score.toFixed(4),
+                    minX,
+                    minY,
+                    maxX - minX,
+                    maxY - minY
+                ));
             }
         });
         // console.log('detections: ', detections);
         // 推論による検出結果をキャンバスに描画する
         for(const detection of detections){
-            const x = detection.bbox[0];
-            const y = detection.bbox[1];
-            const width = detection.bbox[2];
-            const height = detection.bbox[3];
             ctxView.strokeStyle = '#00FF00';
-            ctxView.strokeRect(x, y, width, height);
+            ctxView.strokeRect(detection.x, detection.y, detection.width, detection.height);
             ctxView.font = '21px serif';
             ctxView.fillStyle = '#00FF00';
-            const className = usecaseClasses[detection.class].name;
-            const score = (detection.score * 100).toFixed(2);
-            ctxView.fillText(`${detection.class}: ${className}, ${score} %`, x,y);
+            const className = usecaseClasses[detection.cls].name;
+            const score = (Number(detection.score) * 100).toFixed(2);
+            ctxView.fillText(`${detection.cls}: ${className}, ${score} %`, detection.x,detection.y);
+        }
+
+        convert(detections);
+    };
+    /** 検出結果をテキストに変換する */
+    const convert = async(detections:Detection[])=>{
+        let text = '';
+        for(const detection of detections){
+            // actor, usecase は単純に出力
+            if(detection.cls == 1){
+                // text += `(usecase)\n`;
+                // 切り取って渡す
+                const imageData = ctxDraw?.getImageData(
+                    detection.x,
+                    detection.y,
+                    detection.width,
+                    detection.height
+                );
+                const r = await recognize(imageData);
+                text += `(${r})\n`;
+                continue;
+            }
+            if(detection.cls == 2){
+                text += `:actor:\n`;
+                continue;
+            }
+
+            // arrow は当たり判定
+            // if(usecaseArrows.indexOf(detection.class)){
+            //     // console.log('arrow');
+            //     let rectTo = {x:0,y:0,width:0,height:0};
+            //     let rectFrom = {x:0,y:0,width:0,height:0};
+            //     // いったん上
+            //     if(detection.class = 9)
+            //     {
+            //         rectTo = {
+            //             x:detection.bbox[0],
+            //             y:detection.bbox[1],
+            //             width:detection.bbox[2],
+            //             height:0
+            //         };
+            //         rectFrom = {
+            //             x:detection.bbox[0],
+            //             y:detection.bbox[1] + detection.bbox[3],
+            //             width:detection.bbox[2],
+            //             height:0
+            //         };
+            //     }
+            // }
+        }
+        setText(text);
+        if(text!=''){
+            setImgSrc(plantuml + plantUmlEncoder.encode(text));
         }
     };
-    const btn = ()=>{
-        // 動作確認ボタン
-        const img = new Image();
-        img.src = 'temp/usecase_h06.png';
-        img.onload = ()=>{
-            if(!ctxView){return;}
-            canvasView.width = img.width;
-            canvasView.height = img.height;
-            ctxView.drawImage(img, 0, 0);
-            execute();
-        };
-
-        console.log(canvasView.toDataURL('image/svg+xml'));
+    const collision = ()=>{
     };
-    const clear = ()=>{
-        ctxView.fillStyle = 'white';
-        ctxView.fillRect(0, 0, canvasView.width, canvasView.height);
-        ctxDraw.fillStyle = 'white';
-        ctxDraw.fillRect(0, 0, canvasDraw.width, canvasDraw.height);
+    /** テキスト検出 */
+    const recognize = async(imageData?:ImageData)=>{
+        if(!canvasDraw || !imageData){ return; }
+
+        // Tesseract に、 ImageData を直接渡すとエラーになる
+        // 暫定的にCanvas 生成して渡す。
+        const c = document.createElement('canvas');
+        c.width = imageData.width;
+        c.height = imageData.height;
+        const cc = c.getContext('2d');
+        cc?.putImageData(imageData, 0, 0);
+        // console.log(c.toDataURL('image/jpeg'));
+
+        const  {data:{text}} = await Tesseract.recognize(
+            c,
+            'eng',
+            // {logger: m=>console.log(m)}
+        );
+        // console.log('recognized: ', text);
+        return text.replace(/[\n\(\)]/sg, '');
+    };
+    const btn = ()=>{
+        // // 動作確認ボタン
+        // const img = new Image();
+        // img.src = 'temp/usecase_h06.png';
+        // img.onload = ()=>{
+        //     if(!ctxView){return;}
+        //     canvasView.width = img.width;
+        //     canvasView.height = img.height;
+        //     ctxView.drawImage(img, 0, 0);
+        //     execute();
+        // };
+
+        // console.log(canvasView.toDataURL('image/svg+xml'));
+    };
+    const clear = (
+        view:HTMLCanvasElement|null=null,
+        draw:HTMLCanvasElement|null=null,
+        cv:CanvasRenderingContext2D|null=null,
+        cd:CanvasRenderingContext2D|null=null)=>{
+
+        // let view:HTMLCanvasElement|undefined=undefined;
+        // let draw:HTMLCanvasElement|undefined=undefined;
+        // let cv:CanvasRenderingContext2D|undefined=undefined;
+        // let cd:CanvasRenderingContext2D|undefined=undefined;
+
+        // // 初回起動
+        // if(_view && _draw && _cv && _cd){
+        //     view = _view;
+        //     draw = _draw;
+        //     cv = _cv;
+        //     cd = _cd;
+        // }
+        
+        // パラメータなし
+        if(canvasView && ctxView && canvasDraw && ctxDraw){
+            // ctxView.fillStyle = 'white';
+            // ctxView.fillRect(0, 0, canvasView.width, canvasView.height);
+            // ctxDraw.fillStyle = 'white';
+            // ctxDraw.fillRect(0, 0, canvasDraw.width, canvasDraw.height);
+            view = canvasView;
+            draw = canvasDraw;
+            cv = ctxView;
+            cd = ctxDraw;
+        }
+
+        if(view && draw && cv && cd){
+            cv.fillStyle = 'white';
+            cv.fillRect(0,0, view.width, view.height);
+            cd.fillStyle = 'white';
+            cd.fillRect(0,0, draw.width, draw.height);
+        }
+        setHistory([]);
     };
     const setPrev = ()=>{
         if(history.length > 0){
             let last = history.pop();
-            if(last){
+            if(last && ctxView){
                 ctxView.putImageData(last, 0, 0);
             }
         }
     }
     const download = (e: MouseEvent<HTMLAnchorElement>)=>{
+        if(!canvasView){ return; }
+
         console.log('download');
         (e.target as HTMLAnchorElement).href = canvasView.toDataURL('image/jpeg'/*, 1.0*/);
     };
     return (<>
-        <p>canvas</p>
-        <div>
-            <button onClick={btn}>button</button>
-            <button onClick={()=>{clear();}}>clear</button>
-            <button onClick={()=>{setPrev();}}>←</button>
-            <a id="download" onClick={download}>DL（右クリック）</a>
-        </div>
-        <canvas id="canvas" width="500" height="500" onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchCancel} style={{border:"1px solid black"}}></canvas>
-        <script></script>
+        <Grid container>
+            <Grid item xs={6}>
+                <p>canvas</p>
+                <div>
+                    {/* <button onClick={btn}>button</button> */}
+                    {/* <Button onClick={btn} variant="outlined">Test</Button> */}
+                    {/* <button onClick={()=>{clear();}}>clear</button> */}
+                    <Button onClick={()=>{clear();}} variant="outlined" startIcon={<ClearIcon/>}>Clear</Button>
+                    {/* <button onClick={()=>{setPrev();}}>←</button> */}
+                    <Button onClick={()=>{setPrev();}} variant="outlined"><UndoIcon/></Button>
+                    <a id="download" onClick={download}>DL（右クリック）</a>
+                    <FormControl component="fieldset">
+                        <RadioGroup row>
+                            <FormControlLabel label="brush" control={
+                                <Radio
+                                    value="brush"
+                                    checked={supply === 'brush'}
+                                    // onChange={()=>{setSupply('brush')}}
+                                    onClick={()=>{setSupply('brush')}}
+                                    color="primary"
+                                    icon={<CreateIcon color="disabled"/>}
+                                    checkedIcon={<CreateIcon/>}
+                                />
+                            } />
+                            <FormControlLabel value="eraser" label="eraser" control={
+                                <Radio
+                                    value="eraser"
+                                    checked={supply === 'eraser'}
+                                    // onChange={()=>{setSupply('brush')}}
+                                    onClick={()=>{setSupply('eraser')}}
+                                    color="secondary"
+                                    icon={<ClearAllIcon color="disabled"/>}
+                                    checkedIcon={<ClearAllIcon/>}
+                                />
+                            }/>
+                        </RadioGroup>
+                    </FormControl>
+                </div>
+                <canvas id="canvas" width="500" height="500" onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchCancel} style={{border:"1px solid black"}}></canvas>
+                {/* <script></script> */}
+            </Grid>
+            <Grid item xs={6}>
+                <p>view</p>
+                <Grid container>
+                    <Grid item xs={12}>
+                        <TextField
+                            id="text"
+                            fullWidth
+                            multiline
+                            variant="outlined"
+                            value={text}
+                            onChange={(e)=>{setText(e.target.value);}}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <img src={imgSrc} />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
     </>);
 }
 export default UmlDrawerComponent;
