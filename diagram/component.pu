@@ -53,9 +53,11 @@ node "Web Browser" {
   node "Tensorflow.js" {
     [モデル(js)]
   }
+  [Tesseract.js]
 }
-[JavaScript] --> [Canvas]: 画像データ取得、セット
-[JavaScript] --> [モデル(js)]: 推論の呼び出し
+[JavaScript] --> [Canvas]
+[JavaScript] --> [モデル(js)]: 物体検出
+[JavaScript] --> [Tesseract.js]: OCR
 
 [手書き画像] ..> tensorflow: トレーニング
 [ラベル情報] ..> tensorflow
