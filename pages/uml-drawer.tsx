@@ -22,23 +22,56 @@ interface Pos{
     x:number;
     y:number;
 }
+interface Rect{
+    x:number;
+    y:number;
+    width:number;
+    height:number;
+}
 /** 検出オブジェクト */
 class Detection{
     constructor(
+        /** クラス分類 */
         public cls:number,
+        /** スコア */
         public score:string,
+        /** X座標 */
         public x:number,
+        /** Y座標 */
         public y:number,
+        /** 幅 */
         public width:number,
-        public height:number
+        /** 高さ */
+        public height:number,
+        /** 参照 */
+        public ref:string='',
     ){}
     /** 当たり判定 */
-    collision(target:Detection){
+    collision(target:Rect){
         return this.x < target.x + target.width &&
                 this.x + this.width > target.width &&
                 this.y < target.y + target.height &&
                 this.y + this.height > target.y;
     }
+    /** 上辺 */
+    top(){ return { x: this.x, y: this.y, width: this.width, height: 0 }; }
+    /** 上方にずらした矩形 */
+    top2(){ return { x: this.x, y: this.y-this.height, width: this.width, height: this.height}; }
+    bottom(){ return { x: this.x, y: this.y + this.height, width: this.width, height: 0 }; }
+    bottom2(){ return { x: this.x, y: this.y+this.height+this.height, width: this.width, height: this.height }; }
+    right(){ return { x: this.x+this.width, y: this.y, width: 0, height: this.height }; }
+    right2(){ return { x: this.x+this.width, y: this.y, width: this.width, height: this.height }; }
+    left(){ return { x: this.x, y:this.y, width: 0, height: this.height}; }
+    left2(){ return { x: this.x-this.width, y: this.y, width: this.width, height: this.height }; }
+    /** 右上の矩形 */
+    rightTop(){ return { x: this.x+this.width/2, y:this.y, width: this.width/2, height: this.height/2}; }
+    rightTop2(){ return { x: this.x+this.width/2, y:this.y-this.y/2, width:this.width, height: this.height }; }
+    rightBottom(){ return { x: this.x+this.width/2, y:this.y+this.y/2, width: this.width/2, height: this.height/2 }; }
+    rightBottom2(){ return { x: this.x+this.width/2, y:this.y+this.y/2, width: this.width, height: this.height }; }
+    leftTop(){ return { x: this.x, y: this.y, width: this.width/2, height: this.height/2 }; }
+    leftTop2(){ return { x: this.x-this.width/2, y: this.y-this.height/2, width: this.width, height: this.height }; }
+    leftBottom(){ return { x: this.x, y: this.y+this.height/2, width: this.width/2, height: this.height/2 }; }
+    leftBottom2(){ return { x: this.x-this.width/2, y:this.y+this.height/2, width: this.width, height: this.height }; }
 }
 
 const UmlDrawerComponent: FC=()=>{
@@ -288,43 +321,52 @@ const UmlDrawerComponent: FC=()=>{
                     detection.height
                 );
                 const r = await recognize(imageData);
-                text += `(${r})\n`;
+                detection.ref = `(${r})`;
+                text += `${detection.ref}\n`;
                 continue;
             }
             if(detection.cls == 2){
-                text += `:actor:\n`;
+                detection.ref = `:actor:`;
+                text += `${detection.ref}\n`;
                 continue;
             }
 
             // arrow は当たり判定
-            // if(usecaseArrows.indexOf(detection.class)){
-            //     // console.log('arrow');
-            //     let rectTo = {x:0,y:0,width:0,height:0};
-            //     let rectFrom = {x:0,y:0,width:0,height:0};
-            //     // いったん上
-            //     if(detection.class = 9)
-            //     {
-            //         rectTo = {
-            //             x:detection.bbox[0],
-            //             y:detection.bbox[1],
-            //             width:detection.bbox[2],
-            //             height:0
-            //         };
-            //         rectFrom = {
-            //             x:detection.bbox[0],
-            //             y:detection.bbox[1] + detection.bbox[3],
-            //             width:detection.bbox[2],
-            //             height:0
-            //         };
-            //     }
-            // }
+            if(usecaseArrows.indexOf(detection.cls)){
+                // console.log('arrow');
+                // 矩形で重なっているか、ずらして当たっているオブジェクトを探す
+                let from:Detection|null=null;
+                let to:Detection|null=null;
+                if(detection.cls = 7){
+                    for(const d2 of detections){
+                        if(d2.collision(detection.right())){ to=d2; }
+                        else if(d2.collision(detection.right2())){ to=d2; }
+                        if(d2.collision(detection.left())){ from=d2; }
+                        else if(d2.collision(detection.left2())){ from=d2; }
+                    }
+                    if(from && from.ref !== '' && to && to.ref !== ''){
+                        text += `${from.ref} --> ${to.ref}\n`;
+                        break;
+                    }
+                }
+                if(detection.cls = 9){
+                    for(const d2 of detections){
+                        if(d2.collision(detection.top())){ to=d2; }
+                        else if(d2.collision(detection.top2())){ to = d2; }
+                        if(d2.collision(detection.bottom())){ from = d2; }
+                        else if(d2.collision(detection.bottom2())){ from = d2; }
+                    }
+                    if(from && from.ref !== '' && to && to.ref !== ''){
+                        text += `${from.ref} --> ${to.ref}\n`;
+                        break;
+                    }
+                }
+            }
         }
         setText(text);
         if(text!=''){
             setImgSrc(plantuml + plantUmlEncoder.encode(text));
         }
-    };
-    const collision = ()=>{
     };
     /** テキスト検出 */
     const recognize = async(imageData?:ImageData)=>{
@@ -403,7 +445,8 @@ const UmlDrawerComponent: FC=()=>{
     const setPrev = ()=>{
         if(history.length > 0){
             let last = history.pop();
-            if(last && ctxView){
+            if(last && ctxDraw && ctxView){
+                ctxDraw.putImageData(last, 0, 0)
                 ctxView.putImageData(last, 0, 0);
             }
         }
@@ -466,7 +509,11 @@ const UmlDrawerComponent: FC=()=>{
                             multiline
                             variant="outlined"
                             value={text}
-                            onChange={(e)=>{setText(e.target.value);}}
+                            // 直接入力用
+                            onChange={(e)=>{
+                                setText(e.target.value);
+                                if(e.target.value!=''){setImgSrc(plantuml + plantUmlEncoder.encode(e.target.value));}
+                            }}
                         />
                     </Grid>
                     <Grid item xs={12}>
