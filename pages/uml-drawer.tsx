@@ -1,6 +1,7 @@
 import { FC, useEffect, useState, MouseEvent, TouchEvent } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
 import ClearIcon from '@material-ui/icons/Clear';
 import UndoIcon from '@material-ui/icons/Undo';
 import CreateIcon from '@material-ui/icons/Create';
@@ -8,6 +9,7 @@ import ClearAllIcon from '@material-ui/icons/ClearAll';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
+import NativeSelect from '@material-ui/core/NativeSelect';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import * as tfjs from '@tensorflow/tfjs';
@@ -79,6 +81,8 @@ const UmlDrawerComponent: FC=()=>{
     const [supply, setSupply] = useState('brush');
     const [text, setText] = useState('');
     const [imgSrc, setImgSrc] = useState('');
+    const [doExec, setDoExec] = useState(true);
+    const [selectedDiagram, setSelectedDiagram] = useState('usecase');
 
     /** 描画中フラグ */
     // let dragging=false;
@@ -252,6 +256,14 @@ const UmlDrawerComponent: FC=()=>{
     }
     /** 処理 */
     const execute = async()=>{
+        if(selectedDiagram == 'usecase'){
+            executeUsecase();
+        } else if(selectedDiagram == 'sequence'){
+            
+        }
+    }
+    const executeUsecase = async()=>{
+        if(!doExec){ return; }
         if(!canvasView || !ctxView || !model){ return; }
 
         // 画像取得
@@ -304,10 +316,10 @@ const UmlDrawerComponent: FC=()=>{
             ctxView.fillText(`${detection.cls}: ${className}, ${score} %`, detection.x,detection.y);
         }
 
-        convert(detections);
+        convertUsecase(detections);
     };
     /** 検出結果をテキストに変換する */
-    const convert = async(detections:Detection[])=>{
+    const convertUsecase = async(detections:Detection[])=>{
         let text = '';
         for(const detection of detections){
             // actor, usecase は単純に出力
@@ -468,6 +480,16 @@ const UmlDrawerComponent: FC=()=>{
                     <Button onClick={()=>{clear();}} variant="outlined" startIcon={<ClearIcon/>}>Clear</Button>
                     {/* <button onClick={()=>{setPrev();}}>←</button> */}
                     <Button onClick={()=>{setPrev();}} variant="outlined"><UndoIcon/></Button>
+                    <FormControlLabel
+                        control={<Checkbox checked={doExec} onChange={(e)=>{setDoExec(e.target.checked)}}/>}
+                        label="exec()"/>
+                    <NativeSelect
+                        value={selectedDiagram}
+                        onChange={(e)=>{setSelectedDiagram(e.target.value);}}
+                    >
+                        <option value={"usecase"}>Usecase</option>
+                        <option value={"sequence"}>Sequence</option>
+                    </NativeSelect>
                     <a id="download" onClick={download}>DL（右クリック）</a>
                     <FormControl component="fieldset">
                         <RadioGroup row>
