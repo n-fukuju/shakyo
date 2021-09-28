@@ -82,7 +82,7 @@ const UmlDrawerComponent: FC=()=>{
     const [text, setText] = useState('');
     const [imgSrc, setImgSrc] = useState('');
     const [doExec, setDoExec] = useState(true);
-    const [selectedDiagram, setSelectedDiagram] = useState('usecase');
+    const [selectedDiagram, setSelectedDiagram] = useState('sequence');
 
     /** 描画中フラグ */
     // let dragging=false;
@@ -129,6 +129,20 @@ const UmlDrawerComponent: FC=()=>{
         '12':{name: 'arrow_right_down'},
         '13':{name: 'arrow_left_up'},
         '14':{name: 'arrow_left_down'},
+    };
+    const sequenceClasses:{[name:string]:any} = {
+        '1': {name: 'participant'},
+        '2': {name: 'actor'},
+        '3': {name: 'actor_with_label'},
+        '4': {name: 'database'},
+        '5': {name: 'database_with_label'},
+        '6': {name: 'lifeline'},
+        '7': {name: 'arow_right'},
+        '8': {name: 'arrow_right_with_label'},
+        '9': {name: 'arrow_left'},
+        '10':{name: 'arrow_left_with_label'},
+        '11':{name: 'arrow_self'},
+        '12':{name: 'arrow_self_with_label'},
     };
     /** 矢印 */
     const usecaseArrows = [7,8,9,10,11,12,13,14];
@@ -256,10 +270,14 @@ const UmlDrawerComponent: FC=()=>{
     }
     /** 処理 */
     const execute = async()=>{
+        if(!doExec){ return }
+
         if(selectedDiagram == 'usecase'){
             executeUsecase();
         } else if(selectedDiagram == 'sequence'){
-            
+            const seqs = await getDetections(1,2,5)
+            console.log(seqs);
+            drawPredictions(seqs, sequenceClasses);
         }
     }
     const executeUsecase = async()=>{
@@ -317,6 +335,55 @@ const UmlDrawerComponent: FC=()=>{
         }
 
         convertUsecase(detections);
+    };
+    const getDetections = async(boxIndex:number, scoreIndex:number, classIndex:number)=>{
+        if(!canvasView || !model){ return []; }
+
+        // 画像取得
+        const image = tfjs.browser.fromPixels(canvasView);
+        const expandedimg = image.toInt().transpose([0,1,2]).expandDims();
+        let predictions = await model.executeAsync(expandedimg);
+        if(!Array.isArray(predictions)){ predictions = [predictions]; }
+
+        // prediction確認用
+        // predictions.forEach( (p,i)=>{
+        //     console.log('prediction: ', i, p.arraySync());
+        // });
+        const boxes = predictions[boxIndex].arraySync() as Number[][][];
+        const scores = predictions[scoreIndex].arraySync() as Number[][];
+        const classes = predictions[classIndex].dataSync();
+
+        const detections:Detection[]=[];
+        scores[0].forEach((score,i)=>{
+            if(score>thresold){
+                const minY = boxes[0][i][0] as number * canvasView.height;
+                const minX = boxes[0][i][1] as number * canvasView.width;
+                const maxY = boxes[0][i][2] as number * canvasView.height;
+                const maxX = boxes[0][i][3] as number * canvasView.width;
+                detections.push(new Detection(
+                    classes[i],
+                    score.toFixed(4),
+                    minX,
+                    minY,
+                    maxX - minX,
+                    maxY - minY
+                ));
+            }
+        });
+        return detections;
+    };
+    const drawPredictions = (detections:Detection[], classes:{[name:string]:any})=>{
+        if(!ctxView){ return; }
+
+        ctxView.strokeStyle = '#00FF00';
+        ctxView.font = '21px serif';
+        ctxView.fillStyle = '#00FF00';
+        for(const detection of detections){
+            ctxView.strokeRect(detection.x, detection.y, detection.width, detection.height);
+            const className = classes[detection.cls].name;
+            const score = (Number(detection.score) * 100).toFixed(2);
+            ctxView.fillText(`${detection.cls}: ${className}, ${score} %`, detection.x,detection.y);
+        }
     };
     /** 検出結果をテキストに変換する */
     const convertUsecase = async(detections:Detection[])=>{
