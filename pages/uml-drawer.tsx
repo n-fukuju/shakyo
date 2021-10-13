@@ -82,7 +82,7 @@ const UmlDrawerComponent: FC=()=>{
     const [text, setText] = useState('');
     const [imgSrc, setImgSrc] = useState('');
     const [doExec, setDoExec] = useState(true);
-    const [selectedDiagram, setSelectedDiagram] = useState('sequence');
+    const [selectedDiagram, setSelectedDiagram] = useState('architecture');
 
     /** 描画中フラグ */
     // let dragging=false;
@@ -144,6 +144,31 @@ const UmlDrawerComponent: FC=()=>{
         '11':{name: 'arrow_self'},
         '12':{name: 'arrow_self_with_label'},
     };
+    const archiClasses:{[name:string]:any} = {
+        '1': {name: 'arrow_right'},
+        '2': {name: 'arrow_left'},
+        '3': {name: 'arrow_up'},
+        '4': {name: 'arrow_down'},
+        '5': {name: 'arrow_right_up'},
+        '6': {name: 'arrow_right_down'},
+        '7': {name: 'arrow_left_up'},
+        '8': {name: 'arrow_left_down'},
+
+        '9': {name: 'user'},
+        '10': {name: 'server'},
+        '11': {name: 'database'},
+
+        '21': {name: 'number_1'},
+        '22': {name: 'number_2'},
+        '23': {name: 'number_3'},
+        '24': {name: 'number_4'},
+        '25': {name: 'number_5'},
+        '26': {name: 'number_6'},
+        '27': {name: 'number_7'},
+        '28': {name: 'number_8'},
+        '29': {name: 'number_9'},
+        '30': {name: 'number_10'},
+    }
     /** 矢印 */
     const usecaseArrows = [7,8,9,10,11,12,13,14];
     useEffect(()=>{
@@ -172,13 +197,22 @@ const UmlDrawerComponent: FC=()=>{
 
                 // モデルの読み込み
                 tfjs.setBackend('webgl');
-                loadGraphModel('tfjs_models/web_model/model.json').then( m=> setModel(m) );
+                let model = getModelPath(selectedDiagram);
+                loadGraphModel(model).then( m=> setModel(m) );
                 setInitialized(true);
             }catch(e){
                 console.log(e);
             }
         }
     });
+
+    /** モデルのパスを取得する */
+    const getModelPath = (diagram:string)=>{
+        let model = 'tfjs_models/web_model/model.json';
+        if(diagram == 'sequence'){ model = 'tfjs_models/seq_model/model.json'}
+        if(diagram == 'architecture'){ model = 'tfjs_models/arc_model/model.json'}
+        return model;
+    }
 
     /** 描画開始 */
     const start = (pageX:number, pageY:number)=>{
@@ -275,9 +309,13 @@ const UmlDrawerComponent: FC=()=>{
         if(selectedDiagram == 'usecase'){
             executeUsecase();
         } else if(selectedDiagram == 'sequence'){
-            const seqs = await getDetections(1,2,5)
+            const seqs = await getDetections(3,7,1);
             console.log(seqs);
             drawPredictions(seqs, sequenceClasses);
+        } else if(selectedDiagram == 'architecture'){
+            const arcs = await getDetections(5,4,6);
+            console.log(arcs);
+            drawPredictions(arcs, archiClasses);
         }
     }
     const executeUsecase = async()=>{
@@ -346,6 +384,7 @@ const UmlDrawerComponent: FC=()=>{
         if(!Array.isArray(predictions)){ predictions = [predictions]; }
 
         // prediction確認用
+        // console.log(`box: ${boxIndex}, score: ${scoreIndex}, class: ${classIndex}`);
         // predictions.forEach( (p,i)=>{
         //     console.log('prediction: ', i, p.arraySync());
         // });
@@ -380,7 +419,7 @@ const UmlDrawerComponent: FC=()=>{
         ctxView.fillStyle = '#00FF00';
         for(const detection of detections){
             ctxView.strokeRect(detection.x, detection.y, detection.width, detection.height);
-            const className = classes[detection.cls].name;
+            const className = (classes[detection.cls])? classes[detection.cls].name:'unknown';
             const score = (Number(detection.score) * 100).toFixed(2);
             ctxView.fillText(`${detection.cls}: ${className}, ${score} %`, detection.x,detection.y);
         }
@@ -552,10 +591,19 @@ const UmlDrawerComponent: FC=()=>{
                         label="exec()"/>
                     <NativeSelect
                         value={selectedDiagram}
-                        onChange={(e)=>{setSelectedDiagram(e.target.value);}}
+                        onChange={(e)=>{
+                            setSelectedDiagram(e.target.value);
+                            tfjs.setBackend('webgl');
+                            // let model = 'tfjs_models/web_model/model.json';
+                            // if(e.target.value == 'sequence'){ model = 'tfjs_models/seq_model/model.json'}
+                            // if(e.target.value == 'architecture'){ model = 'tfjs_models/arc_model/model.json'}
+                            let model = getModelPath(e.target.value);
+                            loadGraphModel(model).then(m=>setModel(m));
+                        }}
                     >
                         <option value={"usecase"}>Usecase</option>
                         <option value={"sequence"}>Sequence</option>
+                        <option value={"architecture"}>architecture</option>
                     </NativeSelect>
                     <a id="download" onClick={download}>DL（右クリック）</a>
                     <FormControl component="fieldset">
