@@ -93,12 +93,16 @@ const UmlDrawerComponent: FC=()=>{
     /** 描画用のキャンバス（非表示） */
     // let canvasDraw:HTMLCanvasElement;
     const [canvasDraw, setCanvasDraw] = useState<HTMLCanvasElement>();
+    /** SVG貼り付け用のキャンバス */
+    const [canvasSvg, setCanvasSvg] = useState<HTMLCanvasElement>();
     /** 2Dコンテキスト */
     // let ctxView:CanvasRenderingContext2D;
     const [ctxView, setCtxView] = useState<CanvasRenderingContext2D>();
     /** 2Dコンテキスト */
     // let ctxDraw:CanvasRenderingContext2D;
     const [ctxDraw, setCtxDraw] = useState<CanvasRenderingContext2D>();
+    /** 2Dコンテキスト */
+    const [ctxSvg, setCtxSvg] = useState<CanvasRenderingContext2D>();
     /** 描画の履歴 */
     // let history:ImageData[]=[];
     const [history, setHistory] = useState<ImageData[]>([]);
@@ -185,13 +189,17 @@ const UmlDrawerComponent: FC=()=>{
                 // if(cd){ ctxDraw = cd; }
                 let view = document.getElementById('canvas') as HTMLCanvasElement;
                 let draw = document.createElement('canvas');
+                let svgs = document.getElementById('canvas2') as HTMLCanvasElement;
                 [draw.width, draw.height] = [view.width, view.height];
                 setCanvasView(view);
                 setCanvasDraw(draw);
+                setCanvasSvg(svgs);
                 const cv = view.getContext('2d');
                 if(cv){ setCtxView(cv); }
                 const cd = draw.getContext('2d');
                 if(cd){ setCtxDraw(cd); }
+                const cs = svgs.getContext('2d');
+                if(cs){ setCtxSvg(cs); }
 
                 clear(view, draw, cv, cd);
 
@@ -200,6 +208,18 @@ const UmlDrawerComponent: FC=()=>{
                 let model = getModelPath(selectedDiagram);
                 loadGraphModel(model).then( m=> setModel(m) );
                 setInitialized(true);
+
+                // ためしにSVG描画
+                // let view2 = document.getElementById('canvas2') as HTMLCanvasElement;
+                // const cv2 = view2.getContext('2d');
+                // ディスプレイ密度を考慮したサイズ
+                // let scale = window.devicePixelRatio;
+                // view2.width = 500*scale;
+                // view2.height= 500*scale;
+
+                // const img = new Image();
+                // img.src= "/images/user.svg";
+                // img.onload = () => cv2?.drawImage(img, 0, 0);
             }catch(e){
                 console.log(e);
             }
@@ -212,6 +232,25 @@ const UmlDrawerComponent: FC=()=>{
         if(diagram == 'sequence'){ model = 'tfjs_models/seq_model/model.json'}
         if(diagram == 'architecture'){ model = 'tfjs_models/arc_model/model.json'}
         return model;
+    }
+
+    /** アイコンのパスを取得する
+     * @returns 存在しない場合、空文字
+    */
+    const getIconPath = (name:string):string=>{
+        if(name == 'arrow_right'){ return '/images/arrow_right.svg'; }
+        if(name == 'arrow_left'){ return '/images/arrow_left.svg'; }
+        if(name == 'arrow_up'){ return '/images/arrow_up.svg'; }
+        if(name == 'arrow_down'){ return '/images/arrow_down.svg'; }
+        if(name == 'arrow_right_up'){ return '/images/arrow_right_up.svg'; }
+        if(name == 'arrow_right_down'){ return '/images/arrow_right_down.svg'; }
+        if(name == 'arrow_left_up'){ return '/images/arrow_left_up.svg'; }
+        if(name == 'arrow_left_down'){ return '/images/arrow_left_down.svg'; }
+
+        if(name == 'user'){ return '/images/user.svg'; }
+        if(name == 'server'){ return '/images/server.svg'; }
+        if(name == 'database'){ return '/images/database.svg'; }
+        return '';
     }
 
     /** 描画開始 */
@@ -316,6 +355,7 @@ const UmlDrawerComponent: FC=()=>{
             const arcs = await getDetections(5,4,6);
             console.log(arcs);
             drawPredictions(arcs, archiClasses);
+            drawArchitecture(arcs, archiClasses);
         }
     }
     const executeUsecase = async()=>{
@@ -411,6 +451,7 @@ const UmlDrawerComponent: FC=()=>{
         });
         return detections;
     };
+    /** 推論結果を描画する */
     const drawPredictions = (detections:Detection[], classes:{[name:string]:any})=>{
         if(!ctxView){ return; }
 
@@ -424,6 +465,25 @@ const UmlDrawerComponent: FC=()=>{
             ctxView.fillText(`${detection.cls}: ${className}, ${score} %`, detection.x,detection.y);
         }
     };
+    /** アーキテクチャ図を描画する */
+    const drawArchitecture = (detections:Detection[], classes:{[name:string]:any})=>{
+        if(!ctxSvg || !canvasSvg){ return; }
+        ctxSvg.clearRect(0,0, canvasSvg.width, canvasSvg.height);
+        for(const detection of detections){
+            const className = (classes[detection.cls])? classes[detection.cls].name: 'unknown';
+            const path = getIconPath(className);
+            if(path!=''){
+                const img = new Image();
+                img.src = path;
+                img.onload = ()=>{
+                    // 座標を補正して配置する
+                    let x = detection.x + (detection.width/2) - (img.width/2);
+                    let y = detection.y + (detection.height/2) - (img.height/2);
+                    ctxSvg.drawImage(img, x, y);
+                }
+            }
+        }
+    }
     /** 検出結果をテキストに変換する */
     const convertUsecase = async(detections:Detection[])=>{
         let text = '';
@@ -657,6 +717,8 @@ const UmlDrawerComponent: FC=()=>{
                         <img src={imgSrc} />
                     </Grid>
                 </Grid>
+                <p>canvas2</p>
+                <canvas id="canvas2" width="500" height="500" style={{border:"1px solid black"}}/>
             </Grid>
         </Grid>
     </>);
