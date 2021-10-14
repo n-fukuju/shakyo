@@ -238,18 +238,18 @@ const UmlDrawerComponent: FC=()=>{
      * @returns 存在しない場合、空文字
     */
     const getIconPath = (name:string):string=>{
-        if(name == 'arrow_right'){ return '/images/arrow_right.svg'; }
-        if(name == 'arrow_left'){ return '/images/arrow_left.svg'; }
-        if(name == 'arrow_up'){ return '/images/arrow_up.svg'; }
-        if(name == 'arrow_down'){ return '/images/arrow_down.svg'; }
-        if(name == 'arrow_right_up'){ return '/images/arrow_right_up.svg'; }
-        if(name == 'arrow_right_down'){ return '/images/arrow_right_down.svg'; }
-        if(name == 'arrow_left_up'){ return '/images/arrow_left_up.svg'; }
-        if(name == 'arrow_left_down'){ return '/images/arrow_left_down.svg'; }
+        if(name == 'arrow_right'){ return 'images/arrow_right.svg'; }
+        if(name == 'arrow_left'){ return 'images/arrow_left.svg'; }
+        if(name == 'arrow_up'){ return 'images/arrow_up.svg'; }
+        if(name == 'arrow_down'){ return 'images/arrow_down.svg'; }
+        if(name == 'arrow_right_up'){ return 'images/arrow_right_up.svg'; }
+        if(name == 'arrow_right_down'){ return 'images/arrow_right_down.svg'; }
+        if(name == 'arrow_left_up'){ return 'images/arrow_left_up.svg'; }
+        if(name == 'arrow_left_down'){ return 'images/arrow_left_down.svg'; }
 
-        if(name == 'user'){ return '/images/user.svg'; }
-        if(name == 'server'){ return '/images/server.svg'; }
-        if(name == 'database'){ return '/images/database.svg'; }
+        if(name == 'user'){ return 'images/user.svg'; }
+        if(name == 'server'){ return 'images/server.svg'; }
+        if(name == 'database'){ return 'images/database.svg'; }
         return '';
     }
 
