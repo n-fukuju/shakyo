@@ -14,6 +14,7 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import * as tfjs from '@tensorflow/tfjs';
 import { loadGraphModel } from '@tensorflow/tfjs-converter';
+import pptxgen from 'pptxgenjs';
 import Tesseract from 'tesseract.js';
 import plantUmlEncoder from 'plantuml-encoder';
 const plantuml = 'http://www.plantuml.com/plantuml/img/';
@@ -117,6 +118,8 @@ const UmlDrawerComponent: FC=()=>{
     const [prevPos, setPrevPos] = useState<Pos>({x:0,y:0});
     /** 推論の採用閾値（暫定） */
     const thresold = 0.50;
+    /** 最後の検出結果 */
+    const [lastDetects, setLastDetects] = useState<Detection[]>([]);
     /** クラスラベル */
     const usecaseClasses:{[name:string]:any} = {
         '1': {name: 'usecase'},
@@ -149,29 +152,29 @@ const UmlDrawerComponent: FC=()=>{
         '12':{name: 'arrow_self_with_label'},
     };
     const archiClasses:{[name:string]:any} = {
-        '1': {name: 'arrow_right'},
-        '2': {name: 'arrow_left'},
-        '3': {name: 'arrow_up'},
-        '4': {name: 'arrow_down'},
-        '5': {name: 'arrow_right_up'},
-        '6': {name: 'arrow_right_down'},
-        '7': {name: 'arrow_left_up'},
-        '8': {name: 'arrow_left_down'},
+        '1': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
+        '2': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
+        '3': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
+        '4': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
+        '5': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
+        '6': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
+        '7': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
+        '8': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
 
-        '9': {name: 'user'},
-        '10': {name: 'server'},
-        '11': {name: 'database'},
+        '9': {name: 'user', width:100, height:100, path:'images/user.svg'},
+        '10': {name: 'server', width:100, height:100, path:'images/server.svg'},
+        '11': {name: 'database', width:100, height:100, path:'images/database.svg'},
 
-        '21': {name: 'number_1'},
-        '22': {name: 'number_2'},
-        '23': {name: 'number_3'},
-        '24': {name: 'number_4'},
-        '25': {name: 'number_5'},
-        '26': {name: 'number_6'},
-        '27': {name: 'number_7'},
-        '28': {name: 'number_8'},
-        '29': {name: 'number_9'},
-        '30': {name: 'number_10'},
+        '21': {name: 'number_1', width:100, height:100, path:'images/'},
+        '22': {name: 'number_2', width:100, height:100, path:'images/'},
+        '23': {name: 'number_3', width:100, height:100, path:'images/'},
+        '24': {name: 'number_4', width:100, height:100, path:'images/'},
+        '25': {name: 'number_5', width:100, height:100, path:'images/'},
+        '26': {name: 'number_6', width:100, height:100, path:'images/'},
+        '27': {name: 'number_7', width:100, height:100, path:'images/'},
+        '28': {name: 'number_8', width:100, height:100, path:'images/'},
+        '29': {name: 'number_9', width:100, height:100, path:'images/'},
+        '30': {name: 'number_10', width:100, height:100, path:'images/'},
     }
     /** 矢印 */
     const usecaseArrows = [7,8,9,10,11,12,13,14];
@@ -234,24 +237,16 @@ const UmlDrawerComponent: FC=()=>{
         return model;
     }
 
-    /** アイコンのパスを取得する
+    /** アーキテクチャ図アイコンのパスを取得する
      * @returns 存在しない場合、空文字
     */
-    const getIconPath = (name:string):string=>{
-        if(name == 'arrow_right'){ return 'images/arrow_right.svg'; }
-        if(name == 'arrow_left'){ return 'images/arrow_left.svg'; }
-        if(name == 'arrow_up'){ return 'images/arrow_up.svg'; }
-        if(name == 'arrow_down'){ return 'images/arrow_down.svg'; }
-        if(name == 'arrow_right_up'){ return 'images/arrow_right_up.svg'; }
-        if(name == 'arrow_right_down'){ return 'images/arrow_right_down.svg'; }
-        if(name == 'arrow_left_up'){ return 'images/arrow_left_up.svg'; }
-        if(name == 'arrow_left_down'){ return 'images/arrow_left_down.svg'; }
-
-        if(name == 'user'){ return 'images/user.svg'; }
-        if(name == 'server'){ return 'images/server.svg'; }
-        if(name == 'database'){ return 'images/database.svg'; }
+    const getIconPath = (cls:number, classes:{[name:string]:any}):string=>{
+        const c = (classes[cls])? classes[cls]: null;
+        if(c && c.path){
+            return c.path;
+        }
         return '';
-    }
+    };
 
     /** 描画開始 */
     const start = (pageX:number, pageY:number)=>{
@@ -345,6 +340,9 @@ const UmlDrawerComponent: FC=()=>{
     const execute = async()=>{
         if(!doExec){ return }
 
+        // 検出結果クリア
+        setLastDetects([]);
+
         if(selectedDiagram == 'usecase'){
             executeUsecase();
         } else if(selectedDiagram == 'sequence'){
@@ -356,6 +354,7 @@ const UmlDrawerComponent: FC=()=>{
             console.log(arcs);
             drawPredictions(arcs, archiClasses);
             drawArchitecture(arcs, archiClasses);
+            setLastDetects(arcs);
         }
     }
     const executeUsecase = async()=>{
@@ -471,7 +470,7 @@ const UmlDrawerComponent: FC=()=>{
         ctxSvg.clearRect(0,0, canvasSvg.width, canvasSvg.height);
         for(const detection of detections){
             const className = (classes[detection.cls])? classes[detection.cls].name: 'unknown';
-            const path = getIconPath(className);
+            const path = getIconPath(detection.cls, classes);
             if(path!=''){
                 const img = new Image();
                 img.src = path;
@@ -635,6 +634,49 @@ const UmlDrawerComponent: FC=()=>{
         console.log('download');
         (e.target as HTMLAnchorElement).href = canvasView.toDataURL('image/jpeg'/*, 1.0*/);
     };
+    /** png ファイルの生成 */
+    const genPng = ()=>{
+        if(!canvasSvg){ return; }
+        canvasSvg.toBlob((b)=>{
+            const url = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.download = 'diagram.png';
+            a.href = url;
+            a.click();
+            a.remove();
+        }, 'image/png');
+    };
+    /** .pptx ファイルの作成 */
+    const genPptx = ()=>{
+        let pres = new pptxgen();
+        let slide = pres.addSlide();
+        // slide.addText('Hello world.', {x:1, y:1, color: "363636"});
+        // 1が、画像の100px分程度。横1000程度、縦560程度
+        // canvas が 500x500 なので、1/100 でよさそう。
+        // slide.addImage({path:'images/user.svg'});
+        // slide.addImage({path:'images/server.svg', x:1,y:1});
+        // slide.addImage({path:'images/database.svg', x:2,y:2});
+        // slide.addImage({path:'images/user.svg', x:3,y:3});
+        // slide.addImage({path:'images/server.svg', x:4,y:4});
+        // slide.addImage({path:'images/database.svg', x:5,y:5});
+        // slide.addImage({path:'images/user.svg', x:6,y:1});
+        // slide.addImage({path:'images/server.svg', x:7,y:2});
+        // slide.addImage({path:'images/database.svg', x:8,y:3});
+
+        for(const detect of lastDetects){
+            const icon = getIconPath(detect.cls, archiClasses);
+            // TODO 画像サイズを定義
+            const size = 100;
+            if(icon!=''){
+                let x = (detect.x + (detect.width/2) - (size/2)) / 100;
+                let y = (detect.y + (detect.height/2) - (size/2)) / 100;
+                slide.addImage({path:icon, x:x, y:y});
+            }
+        }
+
+        pres.writeFile();
+    };
+
     return (<>
         <Grid container>
             <Grid item xs={6}>
@@ -665,7 +707,9 @@ const UmlDrawerComponent: FC=()=>{
                         <option value={"sequence"}>Sequence</option>
                         <option value={"architecture"}>architecture</option>
                     </NativeSelect>
-                    <a id="download" onClick={download}>DL（右クリック）</a>
+                    {/* <a id="download" onClick={download}>DL（右クリック）</a> */}
+                    <Button onClick={()=>{genPng();}} variant="outlined">png DL</Button>
+                    <Button onClick={()=>{genPptx();}} variant="outlined">pptx DL</Button>
                     <FormControl component="fieldset">
                         <RadioGroup row>
                             <FormControlLabel label="brush" control={

@@ -19,6 +19,7 @@
     "next": "11.0.1",
     "php-wasm": "0.0.4-a",
     "plantuml-encoder": "^1.4.0",
+    "pptxgenjs": "^3.8.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "tesseract.js": "^2.1.5"
