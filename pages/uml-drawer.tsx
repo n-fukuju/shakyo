@@ -152,29 +152,30 @@ const UmlDrawerComponent: FC=()=>{
         '12':{name: 'arrow_self_with_label'},
     };
     const archiClasses:{[name:string]:any} = {
-        '1': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
-        '2': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
-        '3': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
-        '4': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
-        '5': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
-        '6': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
-        '7': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
-        '8': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
+        '1': {name: 'user', width:100, height:100, path:'images/user.svg'},
+        '2': {name: 'server', width:100, height:100, path:'images/server.svg'},
+        '3': {name: 'database', width:100, height:100, path:'images/database.svg'},
+        '4': {name: 'text'},
 
-        '9': {name: 'user', width:100, height:100, path:'images/user.svg'},
-        '10': {name: 'server', width:100, height:100, path:'images/server.svg'},
-        '11': {name: 'database', width:100, height:100, path:'images/database.svg'},
+        '5': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
+        '6': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
+        '7': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
+        '8': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
+        '9': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
+        '10': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
+        '11': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
+        '12': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
 
-        '21': {name: 'number_1', width:100, height:100, path:'images/'},
-        '22': {name: 'number_2', width:100, height:100, path:'images/'},
-        '23': {name: 'number_3', width:100, height:100, path:'images/'},
-        '24': {name: 'number_4', width:100, height:100, path:'images/'},
-        '25': {name: 'number_5', width:100, height:100, path:'images/'},
-        '26': {name: 'number_6', width:100, height:100, path:'images/'},
-        '27': {name: 'number_7', width:100, height:100, path:'images/'},
-        '28': {name: 'number_8', width:100, height:100, path:'images/'},
-        '29': {name: 'number_9', width:100, height:100, path:'images/'},
-        '30': {name: 'number_10', width:100, height:100, path:'images/'},
+        '13': {name: 'number_1', width:100, height:100, path:'images/number_1'},
+        '14': {name: 'number_2', width:100, height:100, path:'images/number_2'},
+        '15': {name: 'number_3', width:100, height:100, path:'images/number_3'},
+        '16': {name: 'number_4', width:100, height:100, path:'images/number_4'},
+        '17': {name: 'number_5', width:100, height:100, path:'images/number_5'},
+        '18': {name: 'number_6', width:100, height:100, path:'images/number_6'},
+        '19': {name: 'number_7', width:100, height:100, path:'images/number_7'},
+        '20': {name: 'number_8', width:100, height:100, path:'images/number_8'},
+        '21': {name: 'number_9', width:100, height:100, path:'images/number_9'},
+        '22':{name: 'number_10', width:100, height:100, path:'images/number_10'},
     }
     /** 矢印 */
     const usecaseArrows = [7,8,9,10,11,12,13,14];
@@ -350,7 +351,7 @@ const UmlDrawerComponent: FC=()=>{
             console.log(seqs);
             drawPredictions(seqs, sequenceClasses);
         } else if(selectedDiagram == 'architecture'){
-            const arcs = await getDetections(5,4,6);
+            const arcs = await getDetections(7,2,4);
             console.log(arcs);
             drawPredictions(arcs, archiClasses);
             drawArchitecture(arcs, archiClasses);
@@ -466,19 +467,25 @@ const UmlDrawerComponent: FC=()=>{
     };
     /** アーキテクチャ図を描画する */
     const drawArchitecture = (detections:Detection[], classes:{[name:string]:any})=>{
-        if(!ctxSvg || !canvasSvg){ return; }
+        if(!ctxSvg || !canvasSvg || !ctxDraw){ return; }
         ctxSvg.clearRect(0,0, canvasSvg.width, canvasSvg.height);
         for(const detection of detections){
             const className = (classes[detection.cls])? classes[detection.cls].name: 'unknown';
-            const path = getIconPath(detection.cls, classes);
-            if(path!=''){
-                const img = new Image();
-                img.src = path;
-                img.onload = ()=>{
-                    // 座標を補正して配置する
-                    let x = detection.x + (detection.width/2) - (img.width/2);
-                    let y = detection.y + (detection.height/2) - (img.height/2);
-                    ctxSvg.drawImage(img, x, y);
+            // 'text' の場合、切り出し。他は画像に置き換え。
+            if(className == 'text'){
+                let text = ctxDraw.getImageData(detection.x, detection.y, detection.width, detection.height);
+                ctxSvg.putImageData(text, detection.x, detection.y);
+            }else{
+                const path = getIconPath(detection.cls, classes);
+                if(path!=''){
+                    const img = new Image();
+                    img.src = path;
+                    img.onload = ()=>{
+                        // 座標を補正して配置する
+                        let x = detection.x + (detection.width/2) - (img.width/2);
+                        let y = detection.y + (detection.height/2) - (img.height/2);
+                        ctxSvg.drawImage(img, x, y);
+                    }
                 }
             }
         }
@@ -664,13 +671,34 @@ const UmlDrawerComponent: FC=()=>{
         // slide.addImage({path:'images/database.svg', x:8,y:3});
 
         for(const detect of lastDetects){
-            const icon = getIconPath(detect.cls, archiClasses);
-            // TODO 画像サイズを定義
-            const size = 100;
-            if(icon!=''){
-                let x = (detect.x + (detect.width/2) - (size/2)) / 100;
-                let y = (detect.y + (detect.height/2) - (size/2)) / 100;
-                slide.addImage({path:icon, x:x, y:y});
+            // 'text' の場合、切り出し。他は画像に置き換え。
+            const className = (archiClasses[detect.cls])? archiClasses[detect.cls].name: 'unknown';
+            if(className == 'text'){
+                // base64imageを作成するため、canvas生成する。
+                if(ctxDraw){
+                    const c = document.createElement('canvas');
+                    c.width = detect.width;
+                    c.height = detect.height;
+                    const cc = c.getContext('2d');
+                    let text = ctxDraw.getImageData(detect.x, detect.y, detect.width, detect.height);
+                    cc?.putImageData(text, 0, 0);
+                    let dataUrl = c.toDataURL();
+                    let x = detect.x / 100;
+                    let y = detect.y / 100;
+                    let w = detect.width / 100;
+                    let h = detect.height / 100;
+                    slide.addImage({data: dataUrl, x:x, y:y, w:w, h:h});
+                    c.remove();
+                }
+            }else{
+                const icon = getIconPath(detect.cls, archiClasses);
+                // TODO 画像サイズを定義
+                const size = 100;
+                if(icon!=''){
+                    let x = (detect.x + (detect.width/2) - (size/2)) / 100;
+                    let y = (detect.y + (detect.height/2) - (size/2)) / 100;
+                    slide.addImage({path:icon, x:x, y:y});
+                }
             }
         }
 
