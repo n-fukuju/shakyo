@@ -155,27 +155,39 @@ const UmlDrawerComponent: FC=()=>{
         '1': {name: 'user', width:100, height:100, path:'images/user.svg'},
         '2': {name: 'server', width:100, height:100, path:'images/server.svg'},
         '3': {name: 'database', width:100, height:100, path:'images/database.svg'},
-        '4': {name: 'text'},
+        '4': {name: 'laptop', width:100, height:100, path:'images/laptop.svg'},
+        '5': {name: 'mobile', width:100, height:100, path:'images/mobile.svg'},
+        '6': {name: 'text'},
 
-        '5': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
-        '6': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
-        '7': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
-        '8': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
-        '9': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
-        '10': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
-        '11': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
-        '12': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
+        '7': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
+        '8': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
+        '9': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
+        '10': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
+        '11': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
+        '12': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
+        '13': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
+        '14': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
 
-        '13': {name: 'number_1', width:100, height:100, path:'images/number_1'},
-        '14': {name: 'number_2', width:100, height:100, path:'images/number_2'},
-        '15': {name: 'number_3', width:100, height:100, path:'images/number_3'},
-        '16': {name: 'number_4', width:100, height:100, path:'images/number_4'},
-        '17': {name: 'number_5', width:100, height:100, path:'images/number_5'},
-        '18': {name: 'number_6', width:100, height:100, path:'images/number_6'},
-        '19': {name: 'number_7', width:100, height:100, path:'images/number_7'},
-        '20': {name: 'number_8', width:100, height:100, path:'images/number_8'},
-        '21': {name: 'number_9', width:100, height:100, path:'images/number_9'},
-        '22':{name: 'number_10', width:100, height:100, path:'images/number_10'},
+        '15': {name: 'arrow_both_horizon', width:100, height:100, path:'images/arrow_both_horizon.svg'},
+        '16': {name: 'arrow_both_vertical', width:100, height:100, path:'images/arrow_both_vertical.svg'},
+        '17': {name: 'arrow_both_right_up', width:100, height:100, path:'images/arrow_both_right_up.svg'},
+        '18': {name: 'arrow_both_right_down', width:100, height:100, path:'images/arrow_both_right_down.svg'},
+
+        '19': {name: 'line_horizon', width:100, height:100, path:'images/line_horizon.svg'},
+        '20': {name: 'line_vertical', width:100, height:100, path:'images/line_vertical.svg'},
+        '21': {name: 'line_right_up', width:100, height:100, path:'images/line_right_up.svg'},
+        '22': {name: 'line_right_down', width:100, height:100, path:'images/line_right_down.svg'},
+
+        '23': {name: 'number_1', width:100, height:100, path:'images/number_1'},
+        '24': {name: 'number_2', width:100, height:100, path:'images/number_2'},
+        '25': {name: 'number_3', width:100, height:100, path:'images/number_3'},
+        '26': {name: 'number_4', width:100, height:100, path:'images/number_4'},
+        '27': {name: 'number_5', width:100, height:100, path:'images/number_5'},
+        '28': {name: 'number_6', width:100, height:100, path:'images/number_6'},
+        '29': {name: 'number_7', width:100, height:100, path:'images/number_7'},
+        '30': {name: 'number_8', width:100, height:100, path:'images/number_8'},
+        '31': {name: 'number_9', width:100, height:100, path:'images/number_9'},
+        '32':{name: 'number_10', width:100, height:100, path:'images/number_10'},
     }
     /** 矢印 */
     const usecaseArrows = [7,8,9,10,11,12,13,14];
@@ -348,11 +360,11 @@ const UmlDrawerComponent: FC=()=>{
             executeUsecase();
         } else if(selectedDiagram == 'sequence'){
             const seqs = await getDetections(3,7,1);
-            console.log(seqs);
+            // console.log(seqs);
             drawPredictions(seqs, sequenceClasses);
         } else if(selectedDiagram == 'architecture'){
-            const arcs = await getDetections(7,2,4);
-            console.log(arcs);
+            const arcs = await getDetections(1,0,4);
+            // console.log(arcs);
             drawPredictions(arcs, archiClasses);
             drawArchitecture(arcs, archiClasses);
             setLastDetects(arcs);
