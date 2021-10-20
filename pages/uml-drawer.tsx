@@ -1,15 +1,22 @@
 import { FC, useEffect, useState, MouseEvent, TouchEvent } from 'react';
+import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import Checkbox from '@material-ui/core/Checkbox';
-import ClearIcon from '@material-ui/icons/Clear';
+import BrushIcon from '@material-ui/icons/Brush';
+import FormatPaintIcon from '@material-ui/icons/FormatPaint';
 import UndoIcon from '@material-ui/icons/Undo';
-import CreateIcon from '@material-ui/icons/Create';
+import CheckIcon from '@material-ui/icons/Check';
 import ClearAllIcon from '@material-ui/icons/ClearAll';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
+import FileCopyIcon from '@material-ui/icons/FileCopy'
+import GitHubIcon from '@material-ui/icons/GitHub';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ImageIcon from '@material-ui/icons/Image';
+import MenuIcon from '@material-ui/icons/Menu';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
+import Toolbar from '@material-ui/core/Toolbar';
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import * as tfjs from '@tensorflow/tfjs';
 import { loadGraphModel } from '@tensorflow/tfjs-converter';
 import pptxgen from 'pptxgenjs';
@@ -40,6 +47,7 @@ class Detection{
 
 const UmlDrawerComponent: FC=()=>{
     const [initialized, setInitialized] = useState(false);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement|null>(null);
     const [supply, setSupply] = useState('brush');
     const [doExec, setDoExec] = useState(true);
     const [selectedDiagram, setSelectedDiagram] = useState('architecture');
@@ -412,14 +420,80 @@ const UmlDrawerComponent: FC=()=>{
 
     return (<>
         <Grid container>
-            <Grid item xs={6}>
-                <p>canvas</p>
-                <div>
-                    <Button onClick={()=>{clear();}} variant="outlined" startIcon={<ClearIcon/>}>Clear</Button>
-                    <Button onClick={()=>{setPrev();}} variant="outlined"><UndoIcon/></Button>
-                    <FormControlLabel
-                        control={<Checkbox checked={doExec} onChange={(e)=>{setDoExec(e.target.checked)}}/>}
-                        label="exec()"/>
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6">Diagramer</Typography>
+                    {/* style={{flexGrow:1}} を指定すると、以降の要素が右寄せになる */}
+                    <Tooltip title="Menu">
+                        <IconButton onClick={(e)=>{setAnchorEl(e.currentTarget)}}>
+                            <MenuIcon style={{color: "white"}}/>
+                        </IconButton>
+                    </Tooltip>
+                    <Menu
+                        anchorEl={anchorEl}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                          }}
+                          transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'center',
+                          }}
+                        keepMounted
+                        open={Boolean(anchorEl)}
+                        onClose={()=>{setAnchorEl(null)}}
+                        >
+                        <MenuItem>
+                            <Typography variant="inherit">500x500</Typography>
+                            <ListItemIcon><CheckIcon/></ListItemIcon>
+                        </MenuItem>
+                        <MenuItem>
+                            <Typography variant="inherit" style={{color:"gray"}}>700x500</Typography>
+                        </MenuItem>
+                    </Menu>
+                    {/* ブラシ */}
+                    <Tooltip title="Brush">
+                        <IconButton onClick={()=>{setSupply('brush')}}>
+                            <BrushIcon style={{color: (supply=='brush')?'red':'white'}}/>
+                        </IconButton>
+                    </Tooltip>
+                    {/* 消しゴム */}
+                    <Tooltip title="Eraser">
+                        <IconButton onClick={()=>{setSupply('eraser')}}>
+                            <FormatPaintIcon style={{color: (supply=='eraser')?'red':'white'}}/>
+                        </IconButton>
+                    </Tooltip>
+                    {/* アンドゥ */}
+                    <Tooltip title="Undo">
+                        <IconButton onClick={()=>{setPrev();}}>
+                            <UndoIcon style={{color:"white"}}/>
+                        </IconButton>
+                    </Tooltip>
+                    {/* 消去 */}
+                    <Tooltip title="Clear All">
+                        <IconButton onClick={()=>{clear();}}>
+                            <ClearAllIcon style={{color: "white"}}/>
+                        </IconButton>
+                    </Tooltip>
+                    {/* ダウンロード */}
+                    <Tooltip title="Download Image file">
+                        <IconButton onClick={()=>{genPng();}}>
+                            <ImageIcon style={{color: "white"}}/>
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Download pptx file">
+                        <IconButton onClick={()=>{genPptx();}}>
+                            <FileCopyIcon style={{color: "white"}}/>
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="https://github.com/n-fukuju/shakyo">
+                        <IconButton href="https://github.com/n-fukuju/shakyo">
+                            <GitHubIcon style={{color: "white"}}/>
+                        </IconButton>
+                    </Tooltip>
+                </Toolbar>
+            </AppBar>
+
                     {/* ダイアグラム選択がないため、一時的に無効化
                      <NativeSelect
                         value={selectedDiagram}
@@ -432,40 +506,22 @@ const UmlDrawerComponent: FC=()=>{
                     >
                         <option value={"architecture"}>architecture</option>
                     </NativeSelect> */}
-                    <Button onClick={()=>{genPng();}} variant="outlined">png DL</Button>
-                    <Button onClick={()=>{genPptx();}} variant="outlined">pptx DL</Button>
-                    <FormControl component="fieldset">
-                        <RadioGroup row>
-                            <FormControlLabel label="brush" control={
-                                <Radio
-                                    value="brush"
-                                    checked={supply === 'brush'}
-                                    // onChange={()=>{setSupply('brush')}}
-                                    onClick={()=>{setSupply('brush')}}
-                                    color="primary"
-                                    icon={<CreateIcon color="disabled"/>}
-                                    checkedIcon={<CreateIcon/>}
-                                />
-                            } />
-                            <FormControlLabel value="eraser" label="eraser" control={
-                                <Radio
-                                    value="eraser"
-                                    checked={supply === 'eraser'}
-                                    // onChange={()=>{setSupply('brush')}}
-                                    onClick={()=>{setSupply('eraser')}}
-                                    color="secondary"
-                                    icon={<ClearAllIcon color="disabled"/>}
-                                    checkedIcon={<ClearAllIcon/>}
-                                />
-                            }/>
-                        </RadioGroup>
-                    </FormControl>
-                </div>
-                <canvas id="canvas" width="500" height="500" onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchCancel} style={{border:"1px solid black"}}></canvas>
+
+            <Grid item xs={6}>
+                <Grid container>
+                    <Grid item xs={12}>
+                        <Typography variant="caption">Drawing Canvas</Typography>
+                    </Grid>
+                    <canvas id="canvas" width="500" height="500" onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchCancel} style={{border:"1px solid black"}}></canvas>
+                </Grid>
             </Grid>
             <Grid item xs={6}>
-                <p>canvas2</p>
-                <canvas id="canvas2" width="500" height="500" style={{border:"1px solid black"}}/>
+                <Grid container>
+                    <Grid item xs={12}>
+                        <Typography variant="caption">Result</Typography>
+                    </Grid>
+                    <canvas id="canvas2" width="500" height="500" style={{border:"1px solid black"}}/>
+                </Grid>
             </Grid>
         </Grid>
     </>);
