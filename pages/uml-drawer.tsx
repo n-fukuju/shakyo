@@ -249,7 +249,7 @@ const UmlDrawerComponent: FC=()=>{
         if(!doExec){ return }
 
         // 処理中
-        if(canvasDraw){ canvasDraw.style.cursor = 'wait'; }
+        if(canvasView){ canvasView.style.cursor = 'wait'; }
 
         // 検出結果クリア
         setLastDetects([]);
@@ -263,7 +263,7 @@ const UmlDrawerComponent: FC=()=>{
         }
 
         // カーソル戻す
-        if(canvasDraw){ canvasDraw.style.cursor = 'auto'; }
+        if(canvasView){ canvasView.style.cursor = 'auto'; }
     }
     /** 物体検出の結果を取得 */
     const getDetections = async(boxIndex:number, scoreIndex:number, classIndex:number)=>{
