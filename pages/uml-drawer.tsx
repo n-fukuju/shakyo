@@ -46,11 +46,19 @@ class Detection{
 }
 
 const UmlDrawerComponent: FC=()=>{
+    /** 初期化済みフラグ */
     const [initialized, setInitialized] = useState(false);
+    /** ヘッダメニューのアンカー */
     const [anchorEl, setAnchorEl] = useState<HTMLElement|null>(null);
+    /** 描画ツール */
     const [supply, setSupply] = useState('brush');
+    /** 実行フラグ */
     const [doExec, setDoExec] = useState(true);
+    /** 検出結果表示フラグ */
+    const [displayDetects, setDisplayDetects] = useState(false);
+    /** 選択中ダイアグラム */
     const [selectedDiagram, setSelectedDiagram] = useState('architecture');
+    /** キャンバスサイズ */
     const [canvasSize, setCanvasSize] = useState('500x500');
 
     /** 描画中フラグ */
@@ -305,6 +313,7 @@ const UmlDrawerComponent: FC=()=>{
     };
     /** 推論結果を描画する */
     const drawPredictions = (detections:Detection[], classes:{[name:string]:any})=>{
+        if(!displayDetects){ return; }
         if(!ctxView){ return; }
 
         ctxView.strokeStyle = '#00FF00';
@@ -479,13 +488,17 @@ const UmlDrawerComponent: FC=()=>{
                         open={Boolean(anchorEl)}
                         onClose={()=>{setAnchorEl(null)}}
                         >
+                        <MenuItem onClick={()=>{setDisplayDetects(!displayDetects);}}>
+                            <Typography variant="inherit">Display Detected</Typography>
+                            { displayDetects ? <ListItemIcon><CheckIcon/></ListItemIcon>:null }
+                        </MenuItem>
                         <MenuItem onClick={()=>{changeCanvasSize(500,500)}}>
                             <Typography variant="inherit">500x500</Typography>
-                            { canvasSize == '500x500'? <ListItemIcon><CheckIcon/></ListItemIcon>:null}
+                            { canvasSize == '500x500'? <ListItemIcon><CheckIcon/></ListItemIcon>:null }
                         </MenuItem>
                         <MenuItem onClick={()=>{changeCanvasSize(700,500)}}>
                             <Typography variant="inherit">700x500</Typography>
-                            { canvasSize == '700x500'? <ListItemIcon><CheckIcon/></ListItemIcon>:null}
+                            { canvasSize == '700x500'? <ListItemIcon><CheckIcon/></ListItemIcon>:null }
                         </MenuItem>
                     </Menu>
                     {/* ブラシ */}
