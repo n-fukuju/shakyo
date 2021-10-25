@@ -264,7 +264,7 @@ const UmlDrawerComponent: FC=()=>{
 
         // アーキテクチャ図の処理
         if(selectedDiagram == 'architecture'){
-            const arcs = await getDetections(6,5,4);
+            const arcs = await getDetections(4,7,1);
             drawPredictions(arcs, archiClasses);
             drawArchitecture(arcs, archiClasses);
             setLastDetects(arcs);
