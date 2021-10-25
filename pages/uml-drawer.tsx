@@ -51,6 +51,7 @@ const UmlDrawerComponent: FC=()=>{
     const [supply, setSupply] = useState('brush');
     const [doExec, setDoExec] = useState(true);
     const [selectedDiagram, setSelectedDiagram] = useState('architecture');
+    const [canvasSize, setCanvasSize] = useState('500x500');
 
     /** 描画中フラグ */
     const [dragging, setDragging] = useState(false);
@@ -85,37 +86,40 @@ const UmlDrawerComponent: FC=()=>{
         '3': {name: 'database', width:100, height:100, path:'images/database.svg'},
         '4': {name: 'laptop', width:100, height:100, path:'images/laptop.svg'},
         '5': {name: 'mobile', width:100, height:100, path:'images/mobile.svg'},
-        '6': {name: 'text'},
+        '6': {name: 'cloud', width:100, height:100, path: 'images/cloud.svg'},
+        '7': {name: 'file', width:100, height:100, path: 'images/file.svg'},
+        '8': {name: 'directory', width:100, height:100, path: 'images/directory.svg'},
+        '25': {name: 'text'},
 
-        '7': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
-        '8': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
-        '9': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
-        '10': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
-        '11': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
-        '12': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
-        '13': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
-        '14': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
+        '9': {name: 'arrow_right', width:100, height:100, path:'images/arrow_right.svg'},
+        '10': {name: 'arrow_left', width:100, height:100, path:'images/arrow_left.svg'},
+        '11': {name: 'arrow_up', width:100, height:100, path:'images/arrow_up.svg'},
+        '12': {name: 'arrow_down', width:100, height:100, path:'images/arrow_down.svg'},
+        '13': {name: 'arrow_right_up', width:100, height:100, path:'images/arrow_right_up.svg'},
+        '14': {name: 'arrow_right_down', width:100, height:100, path:'images/arrow_right_down.svg'},
+        '15': {name: 'arrow_left_up', width:100, height:100, path:'images/arrow_left_up.svg'},
+        '16': {name: 'arrow_left_down', width:100, height:100, path:'images/arrow_left_down.svg'},
 
-        '15': {name: 'arrow_both_horizon', width:100, height:100, path:'images/arrow_both_horizon.svg'},
-        '16': {name: 'arrow_both_vertical', width:100, height:100, path:'images/arrow_both_vertical.svg'},
-        '17': {name: 'arrow_both_right_up', width:100, height:100, path:'images/arrow_both_right_up.svg'},
-        '18': {name: 'arrow_both_right_down', width:100, height:100, path:'images/arrow_both_right_down.svg'},
+        '17': {name: 'arrow_both_horizon', width:100, height:100, path:'images/arrow_both_horizon.svg'},
+        '18': {name: 'arrow_both_vertical', width:100, height:100, path:'images/arrow_both_vertical.svg'},
+        '19': {name: 'arrow_both_right_up', width:100, height:100, path:'images/arrow_both_right_up.svg'},
+        '20': {name: 'arrow_both_right_down', width:100, height:100, path:'images/arrow_both_right_down.svg'},
 
-        '19': {name: 'line_horizon', width:100, height:100, path:'images/line_horizon.svg'},
-        '20': {name: 'line_vertical', width:100, height:100, path:'images/line_vertical.svg'},
-        '21': {name: 'line_right_up', width:100, height:100, path:'images/line_right_up.svg'},
-        '22': {name: 'line_right_down', width:100, height:100, path:'images/line_right_down.svg'},
+        '21': {name: 'line_horizon', width:100, height:100, path:'images/line_horizon.svg'},
+        '22': {name: 'line_vertical', width:100, height:100, path:'images/line_vertical.svg'},
+        '23': {name: 'line_right_up', width:100, height:100, path:'images/line_right_up.svg'},
+        '24': {name: 'line_right_down', width:100, height:100, path:'images/line_right_down.svg'},
 
-        '23': {name: 'number_1', width:100, height:100, path:'images/number_1'},
-        '24': {name: 'number_2', width:100, height:100, path:'images/number_2'},
-        '25': {name: 'number_3', width:100, height:100, path:'images/number_3'},
-        '26': {name: 'number_4', width:100, height:100, path:'images/number_4'},
-        '27': {name: 'number_5', width:100, height:100, path:'images/number_5'},
-        '28': {name: 'number_6', width:100, height:100, path:'images/number_6'},
-        '29': {name: 'number_7', width:100, height:100, path:'images/number_7'},
-        '30': {name: 'number_8', width:100, height:100, path:'images/number_8'},
-        '31': {name: 'number_9', width:100, height:100, path:'images/number_9'},
-        '32':{name: 'number_10', width:100, height:100, path:'images/number_10'},
+        '26': {name: 'number_1', width:100, height:100, path:'images/number_1.svg'},
+        '27': {name: 'number_2', width:100, height:100, path:'images/number_2.svg'},
+        '28': {name: 'number_3', width:100, height:100, path:'images/number_3.svg'},
+        '29': {name: 'number_4', width:100, height:100, path:'images/number_4.svg'},
+        '30': {name: 'number_5', width:100, height:100, path:'images/number_5.svg'},
+        '31': {name: 'number_6', width:100, height:100, path:'images/number_6.svg'},
+        '32': {name: 'number_7', width:100, height:100, path:'images/number_7.svg'},
+        '33': {name: 'number_8', width:100, height:100, path:'images/number_8.svg'},
+        '34': {name: 'number_9', width:100, height:100, path:'images/number_9.svg'},
+        '35': {name: 'number_10', width:100, height:100, path:'images/number_10.svg'},
     }
     useEffect(()=>{
         // console.log('use effect');
@@ -182,7 +186,9 @@ const UmlDrawerComponent: FC=()=>{
         const pos = getPos(pageX, pageY);
         setStartPos(pos);
         setPrevPos(pos);
+        // 履歴追加
         history.push(ctxDraw.getImageData(0,0, canvasDraw.width, canvasDraw.height));
+        if(history.length > 20){ history.shift(); }
     }
     const mouseDown = (e: MouseEvent<HTMLCanvasElement>)=>{
         start(e.pageX, e.pageY);
@@ -242,16 +248,22 @@ const UmlDrawerComponent: FC=()=>{
     const execute = async()=>{
         if(!doExec){ return }
 
+        // 処理中
+        if(canvasDraw){ canvasDraw.style.cursor = 'wait'; }
+
         // 検出結果クリア
         setLastDetects([]);
 
         // アーキテクチャ図の処理
         if(selectedDiagram == 'architecture'){
-            const arcs = await getDetections(1,0,4);
+            const arcs = await getDetections(6,5,4);
             drawPredictions(arcs, archiClasses);
             drawArchitecture(arcs, archiClasses);
             setLastDetects(arcs);
         }
+
+        // カーソル戻す
+        if(canvasDraw){ canvasDraw.style.cursor = 'auto'; }
     }
     /** 物体検出の結果を取得 */
     const getDetections = async(boxIndex:number, scoreIndex:number, classIndex:number)=>{
@@ -387,7 +399,7 @@ const UmlDrawerComponent: FC=()=>{
             // 'text' の場合、切り出し。他は画像に置き換え。
             const className = (archiClasses[detect.cls])? archiClasses[detect.cls].name: 'unknown';
             if(className == 'text'){
-                // base64imageを作成するため、canvas生成する。
+                // コピペ用base64imageを作成するため、canvas生成する。
                 if(ctxDraw){
                     const c = document.createElement('canvas');
                     c.width = detect.width;
@@ -418,11 +430,35 @@ const UmlDrawerComponent: FC=()=>{
         pres.writeFile();
     };
 
+    const changeCanvasSize = (width:number, height:number)=>{
+        let value = `${width}x${height}`;
+        if(canvasSize == value){ return; }
+        if(!canvasView || !ctxView || !canvasDraw || !ctxDraw || !canvasSvg || !ctxSvg){return;}
+
+        // サイズ変更前を取得しておく
+        const viewData = ctxView.getImageData(0, 0, canvasView.width, canvasView.height);
+        const drawData = ctxDraw.getImageData(0, 0, canvasDraw.width, canvasDraw.height);
+        const svgData = ctxSvg.getImageData(0, 0, canvasSvg.width, canvasSvg.height);
+
+        // サイズ変更
+        [canvasView.width, canvasView.height] = [width, height];
+        [canvasDraw.width, canvasDraw.height] = [width, height];
+        [canvasSvg.width, canvasSvg.height] = [width, height];
+
+        // クリアしてから貼り付け
+        clear();
+        ctxView.putImageData(viewData, 0, 0);
+        ctxDraw.putImageData(drawData, 0, 0);
+        ctxSvg.putImageData(svgData, 0, 0);
+
+        setCanvasSize(value);
+    };
+
     return (<>
         <Grid container>
             <AppBar position="static">
                 <Toolbar>
-                    <Typography variant="h6">Diagramer</Typography>
+                    <Typography variant="h6">DegiThoth</Typography>
                     {/* style={{flexGrow:1}} を指定すると、以降の要素が右寄せになる */}
                     <Tooltip title="Menu">
                         <IconButton onClick={(e)=>{setAnchorEl(e.currentTarget)}}>
@@ -431,24 +467,25 @@ const UmlDrawerComponent: FC=()=>{
                     </Tooltip>
                     <Menu
                         anchorEl={anchorEl}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center',
-                          }}
-                          transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center',
-                          }}
+                        // anchorOrigin={{
+                        //     vertical: 'bottom',
+                        //     horizontal: 'center',
+                        //   }}
+                        //   transformOrigin={{
+                        //     vertical: 'top',
+                        //     horizontal: 'center',
+                        //   }}
                         keepMounted
                         open={Boolean(anchorEl)}
                         onClose={()=>{setAnchorEl(null)}}
                         >
-                        <MenuItem>
+                        <MenuItem onClick={()=>{changeCanvasSize(500,500)}}>
                             <Typography variant="inherit">500x500</Typography>
-                            <ListItemIcon><CheckIcon/></ListItemIcon>
+                            { canvasSize == '500x500'? <ListItemIcon><CheckIcon/></ListItemIcon>:null}
                         </MenuItem>
-                        <MenuItem>
-                            <Typography variant="inherit" style={{color:"gray"}}>700x500</Typography>
+                        <MenuItem onClick={()=>{changeCanvasSize(700,500)}}>
+                            <Typography variant="inherit">700x500</Typography>
+                            { canvasSize == '700x500'? <ListItemIcon><CheckIcon/></ListItemIcon>:null}
                         </MenuItem>
                     </Menu>
                     {/* ブラシ */}
@@ -464,17 +501,17 @@ const UmlDrawerComponent: FC=()=>{
                         </IconButton>
                     </Tooltip>
                     {/* アンドゥ */}
-                    <Tooltip title="Undo">
-                        <IconButton onClick={()=>{setPrev();}}>
+                    {/* <Tooltip title="Undo">
+                        <IconButton disabled onClick={()=>{setPrev();}}>
                             <UndoIcon style={{color:"white"}}/>
                         </IconButton>
-                    </Tooltip>
+                    </Tooltip> */}
                     {/* 消去 */}
-                    <Tooltip title="Clear All">
-                        <IconButton onClick={()=>{clear();}}>
+                    {/* <Tooltip title="Clear All">
+                        <IconButton disabled onClick={()=>{clear();}}>
                             <ClearAllIcon style={{color: "white"}}/>
                         </IconButton>
-                    </Tooltip>
+                    </Tooltip> */}
                     {/* ダウンロード */}
                     <Tooltip title="Download Image file">
                         <IconButton onClick={()=>{genPng();}}>
